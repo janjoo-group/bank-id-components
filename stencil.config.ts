@@ -17,6 +17,7 @@ setPluginConfigurationDefaults({
 
 export const config: Config = {
   namespace: 'jgroup-bank-id-components',
+  hashFileNames: true,
   outputTargets: [
     {
       type: 'dist',

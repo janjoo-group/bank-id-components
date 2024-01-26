@@ -1,25 +1,3 @@
-'use strict';
-
-function _interopNamespace(e) {
-  if (e && e.__esModule) return e;
-  var n = Object.create(null);
-  if (e) {
-    Object.keys(e).forEach(function (k) {
-      if (k !== 'default') {
-        var d = Object.getOwnPropertyDescriptor(e, k);
-        Object.defineProperty(n, k, d.get ? d : {
-          enumerable: true,
-          get: function () {
-            return e[k];
-          }
-        });
-      }
-    });
-  }
-  n['default'] = e;
-  return Object.freeze(n);
-}
-
 const NAMESPACE = 'jgroup-bank-id-components';
 
 /**
@@ -34,10 +12,6 @@ let scopeId;
 let hostTagName;
 let isSvgMode = false;
 let queuePending = false;
-const getAssetPath = (path) => {
-    const assetUrl = new URL(path, plt.$resourcesUrl$);
-    return assetUrl.origin !== win.location.origin ? assetUrl.href : assetUrl.pathname;
-};
 const createTime = (fnName, tagName = '') => {
     {
         return () => {
@@ -1781,12 +1755,12 @@ const loadModule = (cmpMeta, hostRef, hmrVersionId) => {
         return module[exportName];
     }
     /*!__STENCIL_STATIC_IMPORT_SWITCH__*/
-    return Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require(
+    return import(
     /* @vite-ignore */
     /* webpackInclude: /\.entry\.js$/ */
     /* webpackExclude: /\.system\.entry\.js$/ */
     /* webpackMode: "lazy" */
-    `./${bundleId}.entry.js${''}`)); }).then((importedModule) => {
+    `./${bundleId}.entry.js${''}`).then((importedModule) => {
         {
             cmpModules.set(bundleId, importedModule);
         }
@@ -1870,14 +1844,6 @@ const flush = () => {
 const nextTick = (cb) => promiseResolve().then(cb);
 const writeTask = /*@__PURE__*/ queueTask(queueDomWrites, true);
 
-exports.Fragment = Fragment;
-exports.Host = Host;
-exports.bootstrapLazy = bootstrapLazy;
-exports.createEvent = createEvent;
-exports.getAssetPath = getAssetPath;
-exports.h = h;
-exports.promiseResolve = promiseResolve;
-exports.registerInstance = registerInstance;
-exports.setNonce = setNonce;
+export { Fragment as F, Host as H, bootstrapLazy as b, createEvent as c, h, promiseResolve as p, registerInstance as r, setNonce as s };
 
-//# sourceMappingURL=index-abe2159a.js.map
+//# sourceMappingURL=index-4b53258b.js.map

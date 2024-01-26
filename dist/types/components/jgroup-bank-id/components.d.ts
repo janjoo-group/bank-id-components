@@ -16,3 +16,10 @@ export declare const Alert: ({ message, type, onTryAgainButtonClick, tryAgainBut
     onTryAgainButtonClick: any;
     tryAgainButtonText: any;
 }) => any;
+export declare const Spinner: ({ color, classes }: {
+    color: any;
+    classes: any;
+}) => any;
+export declare const BankIdLogo: ({ color }: {
+    color: any;
+}) => any;

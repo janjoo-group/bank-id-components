@@ -1,0 +1,31 @@
+<!doctype html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"
+    />
+    <title>Stencil Component Starter</title>
+
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+    </style>
+
+    <script
+      type="module"
+      src="/build/jgroup-bank-id-components.esm.js"
+    ></script>
+    <script nomodule src="/build/jgroup-bank-id-components.js"></script>
+  </head>
+  <body>
+    <jgroup-bank-id
+      type="auth"
+      auth-url="http://fartygskollen.test/login/shipper/bankid"
+      collect-url="http://fartygskollen.test/login/shipper/bankid/collect"
+      cancel-url="http://fartygskollen.test/login/bankid/cancel"
+    ></jgroup-bank-id>
+  </body>
+</html>

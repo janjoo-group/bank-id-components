@@ -21,5 +21,6 @@
   "hintcode-alreadyInProgress": "En identifiering eller underskrift för det här personnumret är redan påbörjad. Försök igen.",
   "hintcode-requestTimeout": "Något gick fel. Försök igen.",
   "hintcode-maintenance": "Något gick fel. Försök igen.",
-  "hintcode-internalError": "Något gick fel. Försök igen."
+  "hintcode-internalError": "Något gick fel. Försök igen.",
+  "hintcode-userMrtd": "Fotografera och läs av din ID-handling med BankID-appen."
 }

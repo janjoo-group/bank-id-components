@@ -21,5 +21,6 @@
   "hintcode-alreadyInProgress": "An identification or signing for this personal number is already started. Please try again.",
   "hintcode-requestTimeout": "Something went wrong. Please try again.",
   "hintcode-maintenance": "Something went wrong. Please try again.",
-  "hintcode-internalError": "Something went wrong. Please try again."
+  "hintcode-internalError": "Something went wrong. Please try again.",
+  "hintcode-userMrtd": "Process your machine-readable travel document using the BankID app."
 }

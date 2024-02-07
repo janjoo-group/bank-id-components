@@ -4,6 +4,7 @@ export declare const useDevice: () => {
     isChromeOnAppleDevice: boolean;
     isFirefoxOnAppleDevice: boolean;
     isOperaTouchOnAppleDevice: boolean;
+    isChromeOnAndroidMobile: boolean;
 };
 export declare function readCookie(name: string): string;
 export declare function getHashParams(hash: string): {};

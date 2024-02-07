@@ -53,7 +53,8 @@ export class JgroupBankId {
     }
     handleVisibilityChange() {
         const hashParams = getHashParams(location.hash);
-        if (hashParams.initiated !== undefined) {
+        if (hashParams.initiated !== undefined ||
+            window.history.state.triggeredByUser === true) {
             this.flowType = 'app';
             this.isInProgress = true;
             this.pollCollect();
@@ -124,6 +125,7 @@ export class JgroupBankId {
             this.throwError(`Failed starting '${this.type}' transaction`);
             return;
         }
+        window.history.pushState({ triggeredByUser: true }, null);
         return this.handleInitComplete(transaction);
     }
     async handleInitComplete({ autoStartToken, transactionId }) {
@@ -133,9 +135,7 @@ export class JgroupBankId {
             this.isInProgress = true;
         }
         else if (this.flowType === 'app') {
-            // this.isInProgress = true;
             const returnUrl = this.createReturnUrl();
-            // this.statusHintCode = 'app-starting';
             window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
         }
     }
@@ -173,6 +173,7 @@ export class JgroupBankId {
                     this.isInProgress = false;
                     window.location.hash = '';
                     this.completed.emit(response);
+                    this.reset();
                     break;
                 default:
                     console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);
@@ -186,6 +187,7 @@ export class JgroupBankId {
             this.isCancelling = true;
             await this.post(this.cancelUrl);
         }
+        window.history.pushState({}, null);
         this.isInProgress = null;
         this.isStarting = false;
         this.isStartingOnAnotherDevice = false;
@@ -198,16 +200,17 @@ export class JgroupBankId {
     }
     createReturnUrl() {
         const device = useDevice();
-        if (device.isChromeOnAppleDevice) {
+        const location = window.location.href.replace('#', '');
+        if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
             return encodeURIComponent('googlechrome://');
         }
         if (device.isFirefoxOnAppleDevice) {
             return encodeURIComponent('firefox://');
         }
         if (device.isOperaTouchOnAppleDevice) {
-            return encodeURIComponent(`${window.location.href.replace('http', 'touch-http')}#initiated=true`);
+            return encodeURIComponent(`${location.replace('http', 'touch-http')}#initiated=true`);
         }
-        return encodeURIComponent(`${window.location.href}#initiated=true`);
+        return encodeURIComponent(`${location}#initiated=true`);
     }
     async post(url) {
         const xsrfCookieName = 'XSRF-TOKEN';

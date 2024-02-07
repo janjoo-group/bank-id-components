@@ -2976,11 +2976,13 @@ const useDevice = () => {
     const isChromeOnAppleDevice = Boolean(navigator.userAgent.match(/CriOS/));
     const isFirefoxOnAppleDevice = Boolean(navigator.userAgent.match(/FxiOS/));
     const isOperaTouchOnAppleDevice = Boolean(navigator.userAgent.match(/OPT/));
+    const isChromeOnAndroidMobile = Boolean(navigator.userAgent.match(/Android/) && navigator.userAgent.match(/Chrome/));
     return {
         isMobileOrTablet,
         isChromeOnAppleDevice,
         isFirefoxOnAppleDevice,
         isOperaTouchOnAppleDevice,
+        isChromeOnAndroidMobile,
     };
 };
 function readCookie(name) {
@@ -3021,7 +3023,8 @@ const sweJson = {
 	"hintcode-alreadyInProgress": "En identifiering eller underskrift för det här personnumret är redan påbörjad. Försök igen.",
 	"hintcode-requestTimeout": "Något gick fel. Försök igen.",
 	"hintcode-maintenance": "Något gick fel. Försök igen.",
-	"hintcode-internalError": "Något gick fel. Försök igen."
+	"hintcode-internalError": "Något gick fel. Försök igen.",
+	"hintcode-userMrtd": "Fotografera och läs av din ID-handling med BankID-appen."
 };
 
 const htmlLang = "en";
@@ -3050,7 +3053,8 @@ const engJson = {
 	"hintcode-alreadyInProgress": "An identification or signing for this personal number is already started. Please try again.",
 	"hintcode-requestTimeout": "Something went wrong. Please try again.",
 	"hintcode-maintenance": "Something went wrong. Please try again.",
-	"hintcode-internalError": "Something went wrong. Please try again."
+	"hintcode-internalError": "Something went wrong. Please try again.",
+	"hintcode-userMrtd": "Process your machine-readable travel document using the BankID app."
 };
 
 const translationSets = [sweJson, engJson];
@@ -7688,7 +7692,8 @@ const JgroupBankId = class {
     }
     handleVisibilityChange() {
         const hashParams = getHashParams(location.hash);
-        if (hashParams.initiated !== undefined) {
+        if (hashParams.initiated !== undefined ||
+            window.history.state.triggeredByUser === true) {
             this.flowType = 'app';
             this.isInProgress = true;
             this.pollCollect();
@@ -7759,6 +7764,7 @@ const JgroupBankId = class {
             this.throwError(`Failed starting '${this.type}' transaction`);
             return;
         }
+        window.history.pushState({ triggeredByUser: true }, null);
         return this.handleInitComplete(transaction);
     }
     async handleInitComplete({ autoStartToken, transactionId }) {
@@ -7768,9 +7774,7 @@ const JgroupBankId = class {
             this.isInProgress = true;
         }
         else if (this.flowType === 'app') {
-            // this.isInProgress = true;
             const returnUrl = this.createReturnUrl();
-            // this.statusHintCode = 'app-starting';
             window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
         }
     }
@@ -7808,6 +7812,7 @@ const JgroupBankId = class {
                     this.isInProgress = false;
                     window.location.hash = '';
                     this.completed.emit(response);
+                    this.reset();
                     break;
                 default:
                     console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);
@@ -7821,6 +7826,7 @@ const JgroupBankId = class {
             this.isCancelling = true;
             await this.post(this.cancelUrl);
         }
+        window.history.pushState({}, null);
         this.isInProgress = null;
         this.isStarting = false;
         this.isStartingOnAnotherDevice = false;
@@ -7833,16 +7839,17 @@ const JgroupBankId = class {
     }
     createReturnUrl() {
         const device = useDevice();
-        if (device.isChromeOnAppleDevice) {
+        const location = window.location.href.replace('#', '');
+        if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
             return encodeURIComponent('googlechrome://');
         }
         if (device.isFirefoxOnAppleDevice) {
             return encodeURIComponent('firefox://');
         }
         if (device.isOperaTouchOnAppleDevice) {
-            return encodeURIComponent(`${window.location.href.replace('http', 'touch-http')}#initiated=true`);
+            return encodeURIComponent(`${location.replace('http', 'touch-http')}#initiated=true`);
         }
-        return encodeURIComponent(`${window.location.href}#initiated=true`);
+        return encodeURIComponent(`${location}#initiated=true`);
     }
     async post(url) {
         const xsrfCookieName = 'XSRF-TOKEN';

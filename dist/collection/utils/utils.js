@@ -13,11 +13,13 @@ export const useDevice = () => {
     const isChromeOnAppleDevice = Boolean(navigator.userAgent.match(/CriOS/));
     const isFirefoxOnAppleDevice = Boolean(navigator.userAgent.match(/FxiOS/));
     const isOperaTouchOnAppleDevice = Boolean(navigator.userAgent.match(/OPT/));
+    const isChromeOnAndroidMobile = Boolean(navigator.userAgent.match(/Android/) && navigator.userAgent.match(/Chrome/));
     return {
         isMobileOrTablet,
         isChromeOnAppleDevice,
         isFirefoxOnAppleDevice,
         isOperaTouchOnAppleDevice,
+        isChromeOnAndroidMobile,
     };
 };
 export function readCookie(name) {

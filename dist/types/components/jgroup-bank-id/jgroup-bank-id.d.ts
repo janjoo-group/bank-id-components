@@ -47,6 +47,7 @@ export declare class JgroupBankId {
     statusHintCode: string;
     status: string;
     qrCodeImageUrl: string;
+    private axios;
     private timeout;
     private TAG;
     private propsValid;

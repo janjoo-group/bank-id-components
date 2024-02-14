@@ -1,9 +1,16 @@
 import { Host, h, } from "@stencil/core";
-import { getQrCodeImageUrl, useDevice, readCookie, getHashParams, } from "./../../utils/utils";
+import { getQrCodeImageUrl, useDevice, 
+// readCookie,
+getHashParams, } from "./../../utils/utils";
 import { createTranslateFunction } from "./localization";
 import { Alert, StartButton, CancelButton } from "./components";
+import axios from "axios";
 export class JgroupBankId {
     constructor() {
+        this.axios = axios.create({
+            withCredentials: true,
+            withXSRFToken: true,
+        });
         this.timeout = null;
         this.TAG = '[jgroup-bank-id]';
         this.propsValid = true;
@@ -119,6 +126,7 @@ export class JgroupBankId {
     async init() {
         const url = this.type === 'auth' ? this.authUrl : this.signUrl;
         this.isStarting = true;
+        // await this.axios.get('/csrf');
         const transaction = await this.post(url);
         if (transaction === null) {
             this.reset();
@@ -213,26 +221,9 @@ export class JgroupBankId {
         return encodeURIComponent(`${location}#initiated=true`);
     }
     async post(url) {
-        const xsrfCookieName = 'XSRF-TOKEN';
-        const xsrfToken = readCookie(xsrfCookieName);
-        const headers = {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-        };
-        if (xsrfToken !== undefined) {
-            headers['X-XSRF-TOKEN'] = xsrfToken;
-        }
         try {
-            const response = await window.fetch(url, {
-                method: 'POST',
-                credentials: 'include',
-                headers,
-            });
-            if (!response.ok) {
-                return null;
-            }
-            return await response.json();
+            const response = await this.axios.post(url);
+            return response.data;
         }
         catch (error) {
             return null;

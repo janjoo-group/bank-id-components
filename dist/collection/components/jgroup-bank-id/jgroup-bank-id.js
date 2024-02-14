@@ -59,6 +59,9 @@ export class JgroupBankId {
         }
     }
     handleVisibilityChange() {
+        if (document.visibilityState === 'hidden') {
+            return;
+        }
         const hashParams = getHashParams(location.hash);
         if (hashParams.initiated !== undefined ||
             window.history.state.triggeredByUser === true) {
@@ -180,7 +183,7 @@ export class JgroupBankId {
                     this.isInProgress = false;
                     window.location.hash = '';
                     this.completed.emit(response);
-                    this.reset();
+                    // this.reset();
                     break;
                 default:
                     console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);

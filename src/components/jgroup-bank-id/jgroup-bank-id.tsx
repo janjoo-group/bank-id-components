@@ -99,6 +99,10 @@ export class JgroupBankId {
 
   @Listen('visibilitychange', { target: 'document' })
   handleVisibilityChange() {
+    if (document.visibilityState === 'hidden') {
+      return;
+    }
+
     const hashParams: { initiated?: string } = getHashParams(location.hash);
 
     if (
@@ -362,7 +366,7 @@ export class JgroupBankId {
           this.isInProgress = false;
           window.location.hash = '';
           this.completed.emit(response);
-          this.reset();
+          // this.reset();
           break;
 
         default:

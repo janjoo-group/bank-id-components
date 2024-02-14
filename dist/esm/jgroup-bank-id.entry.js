@@ -11010,7 +11010,6 @@ const JgroupBankId = class {
     async init() {
         const url = this.type === 'auth' ? this.authUrl : this.signUrl;
         this.isStarting = true;
-        // await this.axios.get('/csrf');
         const transaction = await this.post(url);
         if (transaction === null) {
             this.reset();

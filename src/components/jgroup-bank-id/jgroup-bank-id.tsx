@@ -12,11 +12,12 @@ import {
 import {
   getQrCodeImageUrl,
   useDevice,
-  readCookie,
+  // readCookie,
   getHashParams,
 } from './../../utils/utils';
 import { createTranslateFunction } from './localization';
 import { Alert, StartButton, CancelButton } from './components';
+import axios from 'axios';
 
 @Component({
   tag: 'jgroup-bank-id',
@@ -137,6 +138,11 @@ export class JgroupBankId {
   @State() status: string = null;
 
   @State() qrCodeImageUrl: string = null;
+
+  private axios = axios.create({
+    withCredentials: true,
+    withXSRFToken: true,
+  });
 
   private timeout = null;
 
@@ -409,31 +415,10 @@ export class JgroupBankId {
   }
 
   private async post(url: string) {
-    const xsrfCookieName = 'XSRF-TOKEN';
-    const xsrfToken = readCookie(xsrfCookieName);
-
-    const headers = {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-    };
-
-    if (xsrfToken !== undefined) {
-      headers['X-XSRF-TOKEN'] = xsrfToken;
-    }
-
     try {
-      const response = await window.fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        headers,
-      });
+      const response = await this.axios.post(url);
 
-      if (!response.ok) {
-        return null;
-      }
-
-      return await response.json();
+      return response.data;
     } catch (error) {
       return null;
     }

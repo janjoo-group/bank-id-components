@@ -10943,12 +10943,13 @@ const JgroupBankId = class {
         }
     }
     handleVisibilityChange() {
+        var _a;
         if (document.visibilityState === 'hidden') {
             return;
         }
         const hashParams = getHashParams(location.hash);
         if (hashParams.initiated !== undefined ||
-            window.history.state.triggeredByUser === true) {
+            ((_a = window.history.state) === null || _a === void 0 ? void 0 : _a.triggeredByUser) === true) {
             this.flowType = 'app';
             this.isInProgress = true;
             this.pollCollect();

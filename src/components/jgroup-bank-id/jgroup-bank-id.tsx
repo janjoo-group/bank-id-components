@@ -107,7 +107,7 @@ export class JgroupBankId {
 
     if (
       hashParams.initiated !== undefined ||
-      window.history.state.triggeredByUser === true
+      window.history.state?.triggeredByUser === true
     ) {
       this.flowType = 'app';
       this.isInProgress = true;

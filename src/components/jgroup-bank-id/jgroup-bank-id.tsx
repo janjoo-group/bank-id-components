@@ -27,6 +27,11 @@ import axios from 'axios';
 })
 export class JgroupBankId {
   /**
+   * Emitted when a BankID process is cancelled
+   */
+  @Event() cancelled: EventEmitter;
+
+  /**
    * Emitted when the BankID process is completed
    */
   @Event() completed: EventEmitter;
@@ -170,6 +175,7 @@ export class JgroupBankId {
     this.startOnAnotherDevice = this.startOnAnotherDevice.bind(this);
     this.pollCollect = this.pollCollect.bind(this);
     this.reset = this.reset.bind(this);
+    this.cancel = this.cancel.bind(this);
     this.setFlowTypeBasedOnDevice();
   }
 
@@ -235,7 +241,7 @@ export class JgroupBankId {
         {this.shouldRenderCancelButton ? (
           <p class="text-center animate-fade">
             <CancelButton
-              onClick={this.reset}
+              onClick={this.cancel}
               text={this.translate('cancel')}
               isLoading={this.isCancelling}
               darkTheme={this.darkTheme}
@@ -386,6 +392,11 @@ export class JgroupBankId {
     };
 
     return getResult();
+  }
+
+  private cancel() {
+    this.cancelled.emit();
+    this.reset();
   }
 
   private async reset() {

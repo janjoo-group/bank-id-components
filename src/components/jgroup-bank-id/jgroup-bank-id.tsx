@@ -171,6 +171,8 @@ export class JgroupBankId {
   componentWillLoad() {
     this.validateProps();
 
+    window.history.replaceState({}, null);
+
     this.init = this.init.bind(this);
     this.startOnAnotherDevice = this.startOnAnotherDevice.bind(this);
     this.pollCollect = this.pollCollect.bind(this);

@@ -10917,6 +10917,7 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
         this.__registerHost();
         this.__attachShadow();
         this.completed = createEvent(this, "completed", 7);
+        this.started = createEvent(this, "started", 7);
         this.axios = axios$1.create({
             withCredentials: true,
             withXSRFToken: true,
@@ -11040,6 +11041,7 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
     async init() {
         const url = this.type === 'auth' ? this.authUrl : this.signUrl;
         this.isStarting = true;
+        this.started.emit();
         const transaction = await this.post(url);
         if (transaction === null) {
             this.reset();

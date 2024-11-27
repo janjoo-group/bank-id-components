@@ -130,6 +130,7 @@ export class JgroupBankId {
     async init() {
         const url = this.type === 'auth' ? this.authUrl : this.signUrl;
         this.isStarting = true;
+        this.started.emit();
         const transaction = await this.post(url);
         if (transaction === null) {
             this.reset();
@@ -393,6 +394,21 @@ export class JgroupBankId {
                 "docs": {
                     "tags": [],
                     "text": "Emitted when the BankID process is completed"
+                },
+                "complexType": {
+                    "original": "any",
+                    "resolved": "any",
+                    "references": {}
+                }
+            }, {
+                "method": "started",
+                "name": "started",
+                "bubbles": true,
+                "cancelable": true,
+                "composed": true,
+                "docs": {
+                    "tags": [],
+                    "text": "Emitted when a BankID process is startd"
                 },
                 "complexType": {
                     "original": "any",

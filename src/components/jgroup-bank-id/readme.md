@@ -23,6 +23,7 @@
 | Event       | Description                                  | Type               |
 | ----------- | -------------------------------------------- | ------------------ |
 | `completed` | Emitted when the BankID process is completed | `CustomEvent<any>` |
+| `started`   | Emitted when a BankID process is startd      | `CustomEvent<any>` |
 
 
 ----------------------------------------------

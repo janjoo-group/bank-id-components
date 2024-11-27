@@ -5,6 +5,10 @@ export declare class JgroupBankId {
      */
     completed: EventEmitter;
     /**
+     * Emitted when a BankID process is startd
+     */
+    started: EventEmitter;
+    /**
      * The type of BankID action to perform
      */
     readonly type: 'auth' | 'sign';

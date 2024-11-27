@@ -44,6 +44,7 @@ export interface JgroupBankIdCustomEvent<T> extends CustomEvent<T> {
 declare global {
     interface HTMLJgroupBankIdElementEventMap {
         "completed": any;
+        "started": any;
     }
     interface HTMLJgroupBankIdElement extends Components.JgroupBankId, HTMLStencilElement {
         addEventListener<K extends keyof HTMLJgroupBankIdElementEventMap>(type: K, listener: (this: HTMLJgroupBankIdElement, ev: JgroupBankIdCustomEvent<HTMLJgroupBankIdElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -89,6 +90,10 @@ declare namespace LocalJSX {
           * Emitted when the BankID process is completed
          */
         "onCompleted"?: (event: JgroupBankIdCustomEvent<any>) => void;
+        /**
+          * Emitted when a BankID process is startd
+         */
+        "onStarted"?: (event: JgroupBankIdCustomEvent<any>) => void;
         /**
           * The URL responsible for initiating a sign process
          */

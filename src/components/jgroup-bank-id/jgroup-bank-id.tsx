@@ -32,6 +32,11 @@ export class JgroupBankId {
   @Event() completed: EventEmitter;
 
   /**
+   * Emitted when a BankID process is startd
+   */
+  @Event() started: EventEmitter;
+
+  /**
    * The type of BankID action to perform
    */
   @Prop() readonly type: 'auth' | 'sign';
@@ -298,6 +303,7 @@ export class JgroupBankId {
     const url = this.type === 'auth' ? this.authUrl : this.signUrl;
 
     this.isStarting = true;
+    this.started.emit();
 
     const transaction = await this.post(url);
 

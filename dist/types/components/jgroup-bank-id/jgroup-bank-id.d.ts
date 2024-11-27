@@ -1,6 +1,10 @@
 import { EventEmitter } from '../../stencil-public-runtime';
 export declare class JgroupBankId {
     /**
+     * Emitted when a BankID process is cancelled
+     */
+    cancelled: EventEmitter;
+    /**
      * Emitted when the BankID process is completed
      */
     completed: EventEmitter;
@@ -69,6 +73,7 @@ export declare class JgroupBankId {
     private init;
     private handleInitComplete;
     private pollCollect;
+    private cancel;
     private reset;
     private createReturnUrl;
     private post;

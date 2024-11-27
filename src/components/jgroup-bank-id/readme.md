@@ -22,6 +22,7 @@
 
 | Event       | Description                                  | Type               |
 | ----------- | -------------------------------------------- | ------------------ |
+| `cancelled` | Emitted when a BankID process is cancelled   | `CustomEvent<any>` |
 | `completed` | Emitted when the BankID process is completed | `CustomEvent<any>` |
 | `started`   | Emitted when a BankID process is startd      | `CustomEvent<any>` |
 

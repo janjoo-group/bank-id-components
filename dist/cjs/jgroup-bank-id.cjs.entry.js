@@ -10918,6 +10918,7 @@ const JgroupBankIdStyle0 = jgroupBankIdCss;
 const JgroupBankId = class {
     constructor(hostRef) {
         index.registerInstance(this, hostRef);
+        this.cancelled = index.createEvent(this, "cancelled", 7);
         this.completed = index.createEvent(this, "completed", 7);
         this.started = index.createEvent(this, "started", 7);
         this.axios = axios$1.create({
@@ -10990,6 +10991,7 @@ const JgroupBankId = class {
         this.startOnAnotherDevice = this.startOnAnotherDevice.bind(this);
         this.pollCollect = this.pollCollect.bind(this);
         this.reset = this.reset.bind(this);
+        this.cancel = this.cancel.bind(this);
         this.setFlowTypeBasedOnDevice();
     }
     render() {
@@ -10998,7 +11000,7 @@ const JgroupBankId = class {
         }
         return (index.h(index.Host, null, this.isInProgress === null ? (index.h("div", { class: "flex flex-col items-center" }, index.h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
-                : this.translate('start-app') }), this.isMobileOrTablet ? (index.h("div", { class: "mt-4" }, index.h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))) : (''))) : (''), this.shouldRenderStatusHint ? (index.h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })) : (''), this.shouldRenderQrImage ? (index.h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })) : (''), this.shouldRenderCancelButton ? (index.h("p", { class: "text-center animate-fade" }, index.h(CancelButton, { onClick: this.reset, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme }))) : ('')));
+                : this.translate('start-app') }), this.isMobileOrTablet ? (index.h("div", { class: "mt-4" }, index.h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))) : (''))) : (''), this.shouldRenderStatusHint ? (index.h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })) : (''), this.shouldRenderQrImage ? (index.h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })) : (''), this.shouldRenderCancelButton ? (index.h("p", { class: "text-center animate-fade" }, index.h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme }))) : ('')));
     }
     get shouldRenderCancelButton() {
         return this.flowType === 'qr' && this.isInProgress && this.timeout !== null;
@@ -11106,6 +11108,10 @@ const JgroupBankId = class {
             }
         };
         return getResult();
+    }
+    cancel() {
+        this.cancelled.emit();
+        this.reset();
     }
     async reset() {
         if (this.isInProgress) {

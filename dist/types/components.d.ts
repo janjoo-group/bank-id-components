@@ -43,6 +43,7 @@ export interface JgroupBankIdCustomEvent<T> extends CustomEvent<T> {
 }
 declare global {
     interface HTMLJgroupBankIdElementEventMap {
+        "cancelled": any;
         "completed": any;
         "started": any;
     }
@@ -86,6 +87,10 @@ declare namespace LocalJSX {
           * The language to use for localization
          */
         "language"?: 'sv' | 'en';
+        /**
+          * Emitted when a BankID process is cancelled
+         */
+        "onCancelled"?: (event: JgroupBankIdCustomEvent<any>) => void;
         /**
           * Emitted when the BankID process is completed
          */

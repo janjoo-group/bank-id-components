@@ -18,12 +18,12 @@ export const StartButton = ({
     default:
       'inline-flex items-center justify-center tracking-wider gap-x-4 w-56 h-12 rounded-md px-3.5 py-2.5 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
     outlinedLight:
-      'bg-white hover:bg-gray-50 active:bg-gray-200 active:border-primary-700 active:text-primary-700 focus-visible:outline-primary-900 text-primary-900 border border-primary-900',
+      'bg-transparent hover:bg-gray-50 active:bg-gray-200 active:border-primary-700 active:text-primary-700 focus-visible:outline-primary-900 text-primary-900 border border-primary-900',
     outlinedDark:
-      'bg-transparent focus-visible:bg-neutral-600 focus-visible:outline-neutral-500 hover:bg-neutral-700 active:border-neutral-200 active:bg-neutral-600 text-white border border-neutral-400',
+      'bg-transparent focus-visible:bg-neutral-600 focus-visible:outline-neutral-500 hover:bg-neutral-700 active:border-neutral-400 active:bg-neutral-600 text-gray-200 border border-neutral-700',
     light:
       'bg-primary-900 hover:bg-primary-800 active:bg-primary-700 focus-visible:outline-primary-900 text-white',
-    dark: 'bg-neutral-800 border border-neutral-600 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
+    dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
   };
   return (
     <button
@@ -56,9 +56,10 @@ export const StartButton = ({
 export const CancelButton = ({ onClick, text, isLoading, darkTheme }) => {
   const classes = {
     default:
-      'inline-flex items-center justify-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed w-20 h-9 px-3.5 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset',
-    light: 'bg-white text-primary-900 ring-gray-300 hover:bg-gray-50',
-    dark: 'bg-neutral-800 text-white ring-neutral-600 hover:bg-neutral-700 active:bg-neutral-600',
+      'inline-flex items-center justify-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed w-20 h-9 px-3.5 py-2 text-sm font-semibold shadow-sm',
+    light:
+      'bg-white border border-gray-300 active:border-gray-400 text-primary-900 active:text-primary-700 ring-gray-300 hover:bg-gray-50 focus-visible:outline-primary-700 outline-offset-2',
+    dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
   };
 
   return (
@@ -94,7 +95,7 @@ export const Alert = ({
   const alertClasses = {
     error: 'border-red-400',
     info: 'border-primary-400',
-    dark: 'bg-neutral-800 bg-neutral-50 text-white',
+    dark: 'bg-neutral-800 text-white',
     light:
       type === 'error'
         ? 'bg-red-50 text-red-700'

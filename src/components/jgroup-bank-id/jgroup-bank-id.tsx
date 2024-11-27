@@ -215,6 +215,7 @@ export class JgroupBankId {
             type={this.status === 'failed' ? 'error' : 'info'}
             tryAgainButtonText={this.translate('try-again')}
             onTryAgainButtonClick={this.reset}
+            darkTheme={this.darkTheme}
           />
         ) : (
           ''
@@ -232,6 +233,7 @@ export class JgroupBankId {
               onClick={this.reset}
               text={this.translate('cancel')}
               isLoading={this.isCancelling}
+              darkTheme={this.darkTheme}
             />
           </p>
         ) : (

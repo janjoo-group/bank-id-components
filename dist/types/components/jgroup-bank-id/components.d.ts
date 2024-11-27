@@ -5,16 +5,18 @@ export declare const StartButton: ({ onClick, isLoading, text, isOutlined, darkT
     isOutlined: any;
     darkTheme: any;
 }) => any;
-export declare const CancelButton: ({ onClick, text, isLoading }: {
+export declare const CancelButton: ({ onClick, text, isLoading, darkTheme }: {
     onClick: any;
     text: any;
     isLoading: any;
+    darkTheme: any;
 }) => any;
-export declare const Alert: ({ message, type, onTryAgainButtonClick, tryAgainButtonText, }: {
+export declare const Alert: ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkTheme, }: {
     message: any;
     type: any;
     onTryAgainButtonClick: any;
     tryAgainButtonText: any;
+    darkTheme: any;
 }) => any;
 export declare const Spinner: ({ color, classes }: {
     color: any;

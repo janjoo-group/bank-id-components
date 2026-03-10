@@ -19,9 +19,10 @@ export function createTranslateFunction(language = null) {
   const translationSet = getTranslationSet(language);
 
   return function translate(...keys: string[]) {
-    if (!translationSet) {
-      return keys[0];
-    }
+    // not needed?
+    // if (!translationSet) {
+    //   return keys[0];
+    // }
 
     for (const key of keys) {
       if (translationSet[key]) {

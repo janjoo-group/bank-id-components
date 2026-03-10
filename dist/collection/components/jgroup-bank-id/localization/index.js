@@ -10,9 +10,10 @@ const getTranslationSet = (locale = null) => {
 export function createTranslateFunction(language = null) {
     const translationSet = getTranslationSet(language);
     return function translate(...keys) {
-        if (!translationSet) {
-            return keys[0];
-        }
+        // not needed?
+        // if (!translationSet) {
+        //   return keys[0];
+        // }
         for (const key of keys) {
             if (translationSet[key]) {
                 return translationSet[key];

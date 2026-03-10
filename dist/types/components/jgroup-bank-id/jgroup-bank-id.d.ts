@@ -21,6 +21,10 @@ export declare class JgroupBankId {
      * The URL responsible for initiating a sign process
      */
     readonly signUrl: string;
+    /**
+     * Automatically start the BankID flow if only one option is available (desktop QR flow)
+     */
+    readonly autoStartSingleOption = false;
     validateSignUrl(newValue: string): void;
     /**
      * The URL responsible for initiating an auth process

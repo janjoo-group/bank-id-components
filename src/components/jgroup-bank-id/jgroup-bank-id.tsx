@@ -60,6 +60,11 @@ export class JgroupBankId {
    */
   @Prop() readonly signUrl: string;
 
+  /**
+   * Automatically start the BankID flow if only one option is available (desktop QR flow)
+   */
+  @Prop() readonly autoStartSingleOption = false;
+
   @Watch('signUrl')
   validateSignUrl(newValue: string) {
     if (this.type === 'sign' && newValue === undefined) {
@@ -179,6 +184,10 @@ export class JgroupBankId {
     this.reset = this.reset.bind(this);
     this.cancel = this.cancel.bind(this);
     this.setFlowTypeBasedOnDevice();
+
+    if (this.autoStartSingleOption && !this.isMobileOrTablet && this.flowType === 'qr') {
+      setTimeout(() => this.init(), 0);
+    }
   }
 
   render() {
@@ -188,7 +197,7 @@ export class JgroupBankId {
 
     return (
       <Host>
-        {this.isInProgress === null ? (
+        {this.isInProgress === null && (
           <div class="flex flex-col items-center">
             <StartButton
               isOutlined={false}
@@ -201,7 +210,7 @@ export class JgroupBankId {
                   : this.translate('start-app')
               }
             />
-            {this.isMobileOrTablet ? (
+            {this.isMobileOrTablet && (
               <div class="mt-4">
                 <StartButton
                   isOutlined={true}
@@ -211,15 +220,11 @@ export class JgroupBankId {
                   text={this.translate('start-qr-another-device')}
                 />
               </div>
-            ) : (
-              ''
             )}
           </div>
-        ) : (
-          ''
         )}
 
-        {this.shouldRenderStatusHint ? (
+        {this.shouldRenderStatusHint && (
           <Alert
             message={this.translate(
               `hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`,
@@ -230,17 +235,13 @@ export class JgroupBankId {
             onTryAgainButtonClick={this.reset}
             darkTheme={this.darkTheme}
           />
-        ) : (
-          ''
         )}
 
-        {this.shouldRenderQrImage ? (
+        {this.shouldRenderQrImage && (
           <img src={this.qrCodeImageUrl} class="mx-auto mb-4 animate-fade" />
-        ) : (
-          ''
         )}
 
-        {this.shouldRenderCancelButton ? (
+        {this.shouldRenderCancelButton && (
           <p class="text-center animate-fade">
             <CancelButton
               onClick={this.cancel}
@@ -249,8 +250,6 @@ export class JgroupBankId {
               darkTheme={this.darkTheme}
             />
           </p>
-        ) : (
-          ''
         )}
       </Host>
     );
@@ -339,6 +338,7 @@ export class JgroupBankId {
   }
 
   private pollCollect(transactionId: string = null) {
+    if (this.timeout !== null) return;
     const getResult = async () => {
       const response = await this.post(this.collectUrl);
 
@@ -417,26 +417,29 @@ export class JgroupBankId {
     this.qrCodeImageUrl = null;
     this.setFlowTypeBasedOnDevice();
     clearTimeout(this.timeout);
+    this.timeout = null;
   }
 
   private createReturnUrl() {
-    const device = useDevice();
+    return 'null';
 
-    const location = window.location.href.replace('#', '');
+    // const device = useDevice();
 
-    if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
-      return encodeURIComponent('googlechrome://');
-    }
-    if (device.isFirefoxOnAppleDevice) {
-      return encodeURIComponent('firefox://');
-    }
-    if (device.isOperaTouchOnAppleDevice) {
-      return encodeURIComponent(
-        `${location.replace('http', 'touch-http')}#initiated=true`,
-      );
-    }
+    // const location = window.location.href.replace('#', '');
 
-    return encodeURIComponent(`${location}#initiated=true`);
+    // if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
+    //   return encodeURIComponent('googlechrome://');
+    // }
+    // if (device.isFirefoxOnAppleDevice) {
+    //   return encodeURIComponent('firefox://');
+    // }
+    // if (device.isOperaTouchOnAppleDevice) {
+    //   return encodeURIComponent(
+    //     `${location.replace('http', 'touch-http')}#initiated=true`,
+    //   );
+    // }
+
+    // return encodeURIComponent(`${location}#initiated=true`);
   }
 
   private async post(url: string) {
@@ -445,6 +448,7 @@ export class JgroupBankId {
 
       return response.data;
     } catch (error) {
+      console.error(`${this.TAG} request failed`, error);
       return null;
     }
   }

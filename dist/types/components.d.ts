@@ -12,6 +12,10 @@ export namespace Components {
          */
         "authUrl": string;
         /**
+          * Automatically start the BankID flow if only one option is available (desktop QR flow)
+         */
+        "autoStartSingleOption": false;
+        /**
           * The URL responsible for cancelling a started process
          */
         "cancelUrl": string;
@@ -71,6 +75,10 @@ declare namespace LocalJSX {
           * The URL responsible for initiating an auth process
          */
         "authUrl"?: string;
+        /**
+          * Automatically start the BankID flow if only one option is available (desktop QR flow)
+         */
+        "autoStartSingleOption"?: false;
         /**
           * The URL responsible for cancelling a started process
          */

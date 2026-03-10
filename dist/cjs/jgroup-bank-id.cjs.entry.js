@@ -3063,9 +3063,10 @@ const getTranslationSet = (locale = null) => {
 function createTranslateFunction(language = null) {
     const translationSet = getTranslationSet(language);
     return function translate(...keys) {
-        if (!translationSet) {
-            return keys[0];
-        }
+        // not needed?
+        // if (!translationSet) {
+        //   return keys[0];
+        // }
         for (const key of keys) {
             if (translationSet[key]) {
                 return translationSet[key];
@@ -10932,6 +10933,7 @@ const JgroupBankId = class {
         this.translate = createTranslateFunction(this.language);
         this.type = undefined;
         this.signUrl = undefined;
+        this.autoStartSingleOption = false;
         this.authUrl = undefined;
         this.collectUrl = undefined;
         this.cancelUrl = undefined;
@@ -10994,14 +10996,17 @@ const JgroupBankId = class {
         this.reset = this.reset.bind(this);
         this.cancel = this.cancel.bind(this);
         this.setFlowTypeBasedOnDevice();
+        if (this.autoStartSingleOption && !this.isMobileOrTablet && this.flowType === 'qr') {
+            setTimeout(() => this.init(), 0);
+        }
     }
     render() {
         if (!this.propsValid) {
             return index.h("p", null, this.propsValidationErrorMessage);
         }
-        return (index.h(index.Host, null, this.isInProgress === null ? (index.h("div", { class: "flex flex-col items-center" }, index.h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+        return (index.h(index.Host, null, this.isInProgress === null && (index.h("div", { class: "flex flex-col items-center" }, index.h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
-                : this.translate('start-app') }), this.isMobileOrTablet ? (index.h("div", { class: "mt-4" }, index.h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))) : (''))) : (''), this.shouldRenderStatusHint ? (index.h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })) : (''), this.shouldRenderQrImage ? (index.h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })) : (''), this.shouldRenderCancelButton ? (index.h("p", { class: "text-center animate-fade" }, index.h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme }))) : ('')));
+                : this.translate('start-app') }), this.isMobileOrTablet && (index.h("div", { class: "mt-4" }, index.h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (index.h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (index.h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (index.h("p", { class: "text-center animate-fade" }, index.h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
     get shouldRenderCancelButton() {
         return this.flowType === 'qr' && this.isInProgress && this.timeout !== null;
@@ -11068,6 +11073,8 @@ const JgroupBankId = class {
         }
     }
     pollCollect(transactionId = null) {
+        if (this.timeout !== null)
+            return;
         const getResult = async () => {
             const response = await this.post(this.collectUrl);
             if (response === null) {
@@ -11129,20 +11136,24 @@ const JgroupBankId = class {
         this.qrCodeImageUrl = null;
         this.setFlowTypeBasedOnDevice();
         clearTimeout(this.timeout);
+        this.timeout = null;
     }
     createReturnUrl() {
-        const device = useDevice();
-        const location = window.location.href.replace('#', '');
-        if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
-            return encodeURIComponent('googlechrome://');
-        }
-        if (device.isFirefoxOnAppleDevice) {
-            return encodeURIComponent('firefox://');
-        }
-        if (device.isOperaTouchOnAppleDevice) {
-            return encodeURIComponent(`${location.replace('http', 'touch-http')}#initiated=true`);
-        }
-        return encodeURIComponent(`${location}#initiated=true`);
+        return 'null';
+        // const device = useDevice();
+        // const location = window.location.href.replace('#', '');
+        // if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
+        //   return encodeURIComponent('googlechrome://');
+        // }
+        // if (device.isFirefoxOnAppleDevice) {
+        //   return encodeURIComponent('firefox://');
+        // }
+        // if (device.isOperaTouchOnAppleDevice) {
+        //   return encodeURIComponent(
+        //     `${location.replace('http', 'touch-http')}#initiated=true`,
+        //   );
+        // }
+        // return encodeURIComponent(`${location}#initiated=true`);
     }
     async post(url) {
         try {
@@ -11150,6 +11161,7 @@ const JgroupBankId = class {
             return response.data;
         }
         catch (error) {
+            console.error(`${this.TAG} request failed`, error);
             return null;
         }
     }

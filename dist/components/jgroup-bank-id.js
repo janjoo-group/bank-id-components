@@ -11137,21 +11137,18 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
         this.timeout = null;
     }
     createReturnUrl() {
-        return 'null';
-        // const device = useDevice();
-        // const location = window.location.href.replace('#', '');
-        // if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
-        //   return encodeURIComponent('googlechrome://');
-        // }
-        // if (device.isFirefoxOnAppleDevice) {
-        //   return encodeURIComponent('firefox://');
-        // }
-        // if (device.isOperaTouchOnAppleDevice) {
-        //   return encodeURIComponent(
-        //     `${location.replace('http', 'touch-http')}#initiated=true`,
-        //   );
-        // }
-        // return encodeURIComponent(`${location}#initiated=true`);
+        const device = useDevice();
+        const location = window.location.href.replace('#', '');
+        if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
+            return encodeURIComponent('googlechrome://');
+        }
+        if (device.isFirefoxOnAppleDevice) {
+            return encodeURIComponent('firefox://');
+        }
+        if (device.isOperaTouchOnAppleDevice) {
+            return encodeURIComponent(`${location.replace('http', 'touch-http')}#initiated=true`);
+        }
+        return encodeURIComponent(`${location}#initiated=true`);
     }
     async post(url) {
         try {

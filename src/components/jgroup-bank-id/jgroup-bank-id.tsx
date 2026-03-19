@@ -421,25 +421,23 @@ export class JgroupBankId {
   }
 
   private createReturnUrl() {
-    return 'null';
+    const device = useDevice();
 
-    // const device = useDevice();
+    const location = window.location.href.replace('#', '');
 
-    // const location = window.location.href.replace('#', '');
+    if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
+      return encodeURIComponent('googlechrome://');
+    }
+    if (device.isFirefoxOnAppleDevice) {
+      return encodeURIComponent('firefox://');
+    }
+    if (device.isOperaTouchOnAppleDevice) {
+      return encodeURIComponent(
+        `${location.replace('http', 'touch-http')}#initiated=true`,
+      );
+    }
 
-    // if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
-    //   return encodeURIComponent('googlechrome://');
-    // }
-    // if (device.isFirefoxOnAppleDevice) {
-    //   return encodeURIComponent('firefox://');
-    // }
-    // if (device.isOperaTouchOnAppleDevice) {
-    //   return encodeURIComponent(
-    //     `${location.replace('http', 'touch-http')}#initiated=true`,
-    //   );
-    // }
-
-    // return encodeURIComponent(`${location}#initiated=true`);
+    return encodeURIComponent(`${location}#initiated=true`);
   }
 
   private async post(url: string) {

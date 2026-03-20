@@ -7,36 +7,15 @@
 import { HTMLStencilElement, JSXBase } from "./stencil-public-runtime";
 export namespace Components {
     interface JgroupBankId {
-        /**
-          * The URL responsible for initiating an auth process
-         */
         "authUrl": string;
-        /**
-          * Automatically start the BankID flow if only one option is available (desktop QR flow)
-         */
         "autoStartSingleOption": false;
-        /**
-          * The URL responsible for cancelling a started process
-         */
         "cancelUrl": string;
-        /**
-          * The URL responsible for collecting the status of the process
-         */
         "collectUrl": string;
-        /**
-          * Whether to use the dark theme
-         */
         "darkTheme": false;
-        /**
-          * The language to use for localization
-         */
         "language": 'sv' | 'en';
-        /**
-          * The URL responsible for initiating a sign process
-         */
         "signUrl": string;
         /**
-          * The type of BankID action to perform
+          * Props
          */
         "type": 'auth' | 'sign';
     }
@@ -71,48 +50,21 @@ declare global {
 }
 declare namespace LocalJSX {
     interface JgroupBankId {
-        /**
-          * The URL responsible for initiating an auth process
-         */
         "authUrl"?: string;
-        /**
-          * Automatically start the BankID flow if only one option is available (desktop QR flow)
-         */
         "autoStartSingleOption"?: false;
-        /**
-          * The URL responsible for cancelling a started process
-         */
         "cancelUrl"?: string;
-        /**
-          * The URL responsible for collecting the status of the process
-         */
         "collectUrl"?: string;
-        /**
-          * Whether to use the dark theme
-         */
         "darkTheme"?: false;
-        /**
-          * The language to use for localization
-         */
         "language"?: 'sv' | 'en';
         /**
-          * Emitted when a BankID process is cancelled
+          * Events
          */
         "onCancelled"?: (event: JgroupBankIdCustomEvent<any>) => void;
-        /**
-          * Emitted when the BankID process is completed
-         */
         "onCompleted"?: (event: JgroupBankIdCustomEvent<any>) => void;
-        /**
-          * Emitted when a BankID process is startd
-         */
         "onStarted"?: (event: JgroupBankIdCustomEvent<any>) => void;
-        /**
-          * The URL responsible for initiating a sign process
-         */
         "signUrl"?: string;
         /**
-          * The type of BankID action to perform
+          * Props
          */
         "type"?: 'auth' | 'sign';
     }

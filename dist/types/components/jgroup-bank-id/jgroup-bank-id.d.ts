@@ -1,55 +1,27 @@
 import { EventEmitter } from '../../stencil-public-runtime';
 export declare class JgroupBankId {
-    /**
-     * Emitted when a BankID process is cancelled
-     */
+    /** Events */
     cancelled: EventEmitter;
-    /**
-     * Emitted when the BankID process is completed
-     */
     completed: EventEmitter;
-    /**
-     * Emitted when a BankID process is startd
-     */
     started: EventEmitter;
-    /**
-     * The type of BankID action to perform
-     */
+    /** Props */
     readonly type: 'auth' | 'sign';
-    validateType(newValue: string): void;
-    /**
-     * The URL responsible for initiating a sign process
-     */
     readonly signUrl: string;
-    /**
-     * Automatically start the BankID flow if only one option is available (desktop QR flow)
-     */
-    readonly autoStartSingleOption = false;
-    validateSignUrl(newValue: string): void;
-    /**
-     * The URL responsible for initiating an auth process
-     */
     readonly authUrl: string;
-    validateAuthUrl(newValue: string): void;
-    /**
-     * The URL responsible for collecting the status of the process
-     */
     readonly collectUrl: string;
-    validateCollectUrl(newValue: string): void;
-    /**
-     * The URL responsible for cancelling a started process
-     */
     readonly cancelUrl: string;
-    validateCancelUrl(newValue: string): void;
-    handleVisibilityChange(): void;
-    /**
-     * Whether to use the dark theme
-     */
+    readonly autoStartSingleOption = false;
     readonly darkTheme = false;
-    /**
-     * The language to use for localization
-     */
     readonly language: 'sv' | 'en';
+    /** Watchers for prop validation */
+    validateType(newValue: string): void;
+    validateSignUrl(newValue: string): void;
+    validateAuthUrl(newValue: string): void;
+    validateCollectUrl(newValue: string): void;
+    validateCancelUrl(newValue: string): void;
+    /** Visibility change listener */
+    handleVisibilityChange(): void;
+    /** State */
     flowType: 'app' | 'qr';
     isMobileOrTablet: any;
     isStarting: boolean;
@@ -59,17 +31,22 @@ export declare class JgroupBankId {
     statusHintCode: string;
     status: string;
     qrCodeImageUrl: string;
+    /** Internal */
     private axios;
-    private timeout;
     private TAG;
     private propsValid;
     private propsValidationErrorMessage;
     private translate;
+    private isPolling;
+    /** Lifecycle */
     componentWillLoad(): void;
+    /** UI Rendering */
     render(): any;
+    /** Computed */
     private get shouldRenderCancelButton();
     private get shouldRenderQrImage();
     private get shouldRenderStatusHint();
+    /** Actions */
     private startOnAnotherDevice;
     private setFlowTypeBasedOnDevice;
     private validateProps;
@@ -81,4 +58,5 @@ export declare class JgroupBankId {
     private reset;
     private createReturnUrl;
     private post;
+    private delay;
 }

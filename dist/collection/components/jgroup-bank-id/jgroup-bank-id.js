@@ -1,25 +1,23 @@
 import { Host, h, } from "@stencil/core";
-import { getQrCodeImageUrl, useDevice, getHashParams, } from "./../../utils/utils";
+import { getQrCodeImageUrl, useDevice, getHashParams } from "./../../utils/utils";
 import { createTranslateFunction } from "./localization";
 import { Alert, StartButton, CancelButton } from "./components";
 import axios from "axios";
 export class JgroupBankId {
     constructor() {
-        this.axios = axios.create({
-            withCredentials: true,
-            withXSRFToken: true,
-        });
-        this.timeout = null;
+        /** Internal */
+        this.axios = axios.create({ withCredentials: true, withXSRFToken: true });
         this.TAG = '[jgroup-bank-id]';
         this.propsValid = true;
         this.propsValidationErrorMessage = null;
         this.translate = createTranslateFunction(this.language);
+        this.isPolling = false;
         this.type = undefined;
         this.signUrl = undefined;
-        this.autoStartSingleOption = false;
         this.authUrl = undefined;
         this.collectUrl = undefined;
         this.cancelUrl = undefined;
+        this.autoStartSingleOption = false;
         this.darkTheme = false;
         this.language = null;
         this.flowType = undefined;
@@ -32,6 +30,7 @@ export class JgroupBankId {
         this.status = null;
         this.qrCodeImageUrl = null;
     }
+    /** Watchers for prop validation */
     validateType(newValue) {
         if (!['auth', 'sign'].includes(newValue)) {
             this.throwError(`The 'type' attribute is required and must be either 'auth' or 'sign'.`);
@@ -48,28 +47,26 @@ export class JgroupBankId {
         }
     }
     validateCollectUrl(newValue) {
-        if (newValue === undefined) {
+        if (!newValue)
             this.throwError(`The 'collect-url' attribute is required.`);
-        }
     }
     validateCancelUrl(newValue) {
-        if (newValue === undefined) {
+        if (!newValue)
             this.throwError(`The 'cancel-url' attribute is required.`);
-        }
     }
+    /** Visibility change listener */
     handleVisibilityChange() {
         var _a;
-        if (document.visibilityState === 'hidden') {
+        if (document.visibilityState === 'hidden')
             return;
-        }
         const hashParams = getHashParams(location.hash);
-        if (hashParams.initiated !== undefined ||
-            ((_a = window.history.state) === null || _a === void 0 ? void 0 : _a.triggeredByUser) === true) {
+        if (hashParams.initiated !== undefined || ((_a = window.history.state) === null || _a === void 0 ? void 0 : _a.triggeredByUser) === true) {
             this.flowType = 'app';
             this.isInProgress = true;
             this.pollCollect();
         }
     }
+    /** Lifecycle */
     componentWillLoad() {
         this.validateProps();
         window.history.replaceState({}, null);
@@ -83,27 +80,25 @@ export class JgroupBankId {
             setTimeout(() => this.init(), 0);
         }
     }
+    /** UI Rendering */
     render() {
-        if (!this.propsValid) {
+        if (!this.propsValid)
             return h("p", null, this.propsValidationErrorMessage);
-        }
         return (h(Host, null, this.isInProgress === null && (h("div", { class: "flex flex-col items-center" }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
                 : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: "mt-4" }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (h("p", { class: "text-center animate-fade" }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
+    /** Computed */
     get shouldRenderCancelButton() {
-        return this.flowType === 'qr' && this.isInProgress && this.timeout !== null;
+        return this.flowType === 'qr' && (this.isInProgress || this.isCancelling);
     }
     get shouldRenderQrImage() {
-        return (this.isInProgress &&
-            this.flowType === 'qr' &&
-            this.qrCodeImageUrl !== null);
+        return this.isInProgress && this.flowType === 'qr' && this.qrCodeImageUrl !== null;
     }
     get shouldRenderStatusHint() {
-        return (this.statusHintCode !== null &&
-            this.statusHintCode !== undefined &&
-            this.isInProgress !== null);
+        return this.statusHintCode !== null && this.isInProgress !== null;
     }
+    /** Actions */
     startOnAnotherDevice() {
         this.isStartingOnAnotherDevice = true;
         this.flowType = 'qr';
@@ -134,44 +129,45 @@ export class JgroupBankId {
     async init() {
         const url = this.type === 'auth' ? this.authUrl : this.signUrl;
         this.isStarting = true;
-        this.started.emit();
         const transaction = await this.post(url);
-        if (transaction === null) {
+        if (!transaction) {
             this.reset();
             this.throwError(`Failed starting '${this.type}' transaction`);
             return;
         }
+        this.started.emit();
         window.history.pushState({ triggeredByUser: true }, null);
-        return this.handleInitComplete(transaction);
+        await this.handleInitComplete(transaction);
     }
     async handleInitComplete({ autoStartToken, transactionId }) {
         if (this.flowType === 'qr') {
-            await this.pollCollect(transactionId);
             this.isStarting = false;
             this.isInProgress = true;
+            await this.pollCollect(transactionId);
         }
         else if (this.flowType === 'app') {
             const returnUrl = this.createReturnUrl();
             window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
         }
     }
-    pollCollect(transactionId = null) {
-        if (this.timeout !== null)
+    async pollCollect(transactionId = null) {
+        if (this.isPolling || !this.isInProgress)
             return;
-        const getResult = async () => {
+        this.isPolling = true;
+        while (this.isPolling && !this.isCancelling) {
             const response = await this.post(this.collectUrl);
-            if (response === null) {
-                console.warn(`${this.TAG} pollCollect returned null, clearing timeout`);
-                clearTimeout(this.timeout);
-                if (this.flowType === 'app') {
-                    this.reset();
-                }
-                return;
+            if (!response) {
+                console.warn(`${this.TAG} pollCollect returned null`);
+                this.isPolling = false;
+                if (this.flowType === 'app')
+                    await this.reset();
+                break;
             }
             if (transactionId && response.transactionId !== transactionId) {
+                console.error(`${this.TAG} transactionId mismatch`);
+                this.isPolling = false;
                 await this.reset();
-                console.error(`${this.TAG} resetting: initial transactionId '${transactionId}' does not match the one returned from collect '${response.transactionId}'.`);
-                return;
+                break;
             }
             if (this.flowType === 'qr') {
                 this.qrCodeImageUrl = await getQrCodeImageUrl(response.qrCode);
@@ -180,32 +176,42 @@ export class JgroupBankId {
             this.status = response.status;
             switch (response.status) {
                 case 'pending':
-                    this.timeout = setTimeout(() => {
-                        getResult();
-                    }, 1000);
+                    await this.delay(1000);
                     break;
                 case 'failed':
+                    this.isPolling = false;
                     this.isInProgress = false;
                     break;
                 case 'complete':
+                    this.isPolling = false;
                     this.isInProgress = false;
+                    this.statusHintCode = null;
                     window.location.hash = '';
                     this.completed.emit(response);
-                    // this.reset();
                     break;
                 default:
                     console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);
+                    this.isPolling = false;
                     break;
             }
-        };
-        return getResult();
+        }
     }
-    cancel() {
-        this.cancelled.emit();
-        this.reset();
+    async cancel() {
+        if (this.isCancelling || !this.isInProgress)
+            return;
+        this.isCancelling = true;
+        this.isPolling = false;
+        try {
+            await this.post(this.cancelUrl);
+            this.cancelled.emit();
+        }
+        finally {
+            this.isCancelling = false;
+            await this.reset(true); // skip the cancel request inside reset
+        }
     }
-    async reset() {
-        if (this.isInProgress) {
+    async reset(skipCancel = false) {
+        if (this.isInProgress && !skipCancel) {
             this.isCancelling = true;
             await this.post(this.cancelUrl);
         }
@@ -218,21 +224,17 @@ export class JgroupBankId {
         this.status = null;
         this.qrCodeImageUrl = null;
         this.setFlowTypeBasedOnDevice();
-        clearTimeout(this.timeout);
-        this.timeout = null;
+        this.isPolling = false;
     }
     createReturnUrl() {
         const device = useDevice();
         const location = window.location.href.replace('#', '');
-        if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
+        if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile)
             return encodeURIComponent('googlechrome://');
-        }
-        if (device.isFirefoxOnAppleDevice) {
+        if (device.isFirefoxOnAppleDevice)
             return encodeURIComponent('firefox://');
-        }
-        if (device.isOperaTouchOnAppleDevice) {
+        if (device.isOperaTouchOnAppleDevice)
             return encodeURIComponent(`${location.replace('http', 'touch-http')}#initiated=true`);
-        }
         return encodeURIComponent(`${location}#initiated=true`);
     }
     async post(url) {
@@ -244,6 +246,9 @@ export class JgroupBankId {
             console.error(`${this.TAG} request failed`, error);
             return null;
         }
+    }
+    delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
     static get is() { return "jgroup-bank-id"; }
     static get encapsulation() { return "shadow"; }
@@ -272,7 +277,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "The type of BankID action to perform"
+                    "text": "Props"
                 },
                 "attribute": "type",
                 "reflect": false
@@ -289,28 +294,10 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "The URL responsible for initiating a sign process"
+                    "text": ""
                 },
                 "attribute": "sign-url",
                 "reflect": false
-            },
-            "autoStartSingleOption": {
-                "type": "boolean",
-                "mutable": false,
-                "complexType": {
-                    "original": "false",
-                    "resolved": "boolean",
-                    "references": {}
-                },
-                "required": false,
-                "optional": false,
-                "docs": {
-                    "tags": [],
-                    "text": "Automatically start the BankID flow if only one option is available (desktop QR flow)"
-                },
-                "attribute": "auto-start-single-option",
-                "reflect": false,
-                "defaultValue": "false"
             },
             "authUrl": {
                 "type": "string",
@@ -324,7 +311,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "The URL responsible for initiating an auth process"
+                    "text": ""
                 },
                 "attribute": "auth-url",
                 "reflect": false
@@ -341,7 +328,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "The URL responsible for collecting the status of the process"
+                    "text": ""
                 },
                 "attribute": "collect-url",
                 "reflect": false
@@ -358,10 +345,28 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "The URL responsible for cancelling a started process"
+                    "text": ""
                 },
                 "attribute": "cancel-url",
                 "reflect": false
+            },
+            "autoStartSingleOption": {
+                "type": "boolean",
+                "mutable": false,
+                "complexType": {
+                    "original": "false",
+                    "resolved": "boolean",
+                    "references": {}
+                },
+                "required": false,
+                "optional": false,
+                "docs": {
+                    "tags": [],
+                    "text": ""
+                },
+                "attribute": "auto-start-single-option",
+                "reflect": false,
+                "defaultValue": "false"
             },
             "darkTheme": {
                 "type": "boolean",
@@ -375,7 +380,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "Whether to use the dark theme"
+                    "text": ""
                 },
                 "attribute": "dark-theme",
                 "reflect": false,
@@ -393,7 +398,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "The language to use for localization"
+                    "text": ""
                 },
                 "attribute": "language",
                 "reflect": false,
@@ -423,7 +428,7 @@ export class JgroupBankId {
                 "composed": true,
                 "docs": {
                     "tags": [],
-                    "text": "Emitted when a BankID process is cancelled"
+                    "text": "Events"
                 },
                 "complexType": {
                     "original": "any",
@@ -438,7 +443,7 @@ export class JgroupBankId {
                 "composed": true,
                 "docs": {
                     "tags": [],
-                    "text": "Emitted when the BankID process is completed"
+                    "text": ""
                 },
                 "complexType": {
                     "original": "any",
@@ -453,7 +458,7 @@ export class JgroupBankId {
                 "composed": true,
                 "docs": {
                     "tags": [],
-                    "text": "Emitted when a BankID process is startd"
+                    "text": ""
                 },
                 "complexType": {
                     "original": "any",

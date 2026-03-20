@@ -7,25 +7,25 @@
 
 ## Properties
 
-| Property                | Attribute                  | Description                                                                           | Type               | Default     |
-| ----------------------- | -------------------------- | ------------------------------------------------------------------------------------- | ------------------ | ----------- |
-| `authUrl`               | `auth-url`                 | The URL responsible for initiating an auth process                                    | `string`           | `undefined` |
-| `autoStartSingleOption` | `auto-start-single-option` | Automatically start the BankID flow if only one option is available (desktop QR flow) | `boolean`          | `false`     |
-| `cancelUrl`             | `cancel-url`               | The URL responsible for cancelling a started process                                  | `string`           | `undefined` |
-| `collectUrl`            | `collect-url`              | The URL responsible for collecting the status of the process                          | `string`           | `undefined` |
-| `darkTheme`             | `dark-theme`               | Whether to use the dark theme                                                         | `boolean`          | `false`     |
-| `language`              | `language`                 | The language to use for localization                                                  | `"en" \| "sv"`     | `null`      |
-| `signUrl`               | `sign-url`                 | The URL responsible for initiating a sign process                                     | `string`           | `undefined` |
-| `type`                  | `type`                     | The type of BankID action to perform                                                  | `"auth" \| "sign"` | `undefined` |
+| Property                | Attribute                  | Description | Type               | Default     |
+| ----------------------- | -------------------------- | ----------- | ------------------ | ----------- |
+| `authUrl`               | `auth-url`                 |             | `string`           | `undefined` |
+| `autoStartSingleOption` | `auto-start-single-option` |             | `boolean`          | `false`     |
+| `cancelUrl`             | `cancel-url`               |             | `string`           | `undefined` |
+| `collectUrl`            | `collect-url`              |             | `string`           | `undefined` |
+| `darkTheme`             | `dark-theme`               |             | `boolean`          | `false`     |
+| `language`              | `language`                 |             | `"en" \| "sv"`     | `null`      |
+| `signUrl`               | `sign-url`                 |             | `string`           | `undefined` |
+| `type`                  | `type`                     | Props       | `"auth" \| "sign"` | `undefined` |
 
 
 ## Events
 
-| Event       | Description                                  | Type               |
-| ----------- | -------------------------------------------- | ------------------ |
-| `cancelled` | Emitted when a BankID process is cancelled   | `CustomEvent<any>` |
-| `completed` | Emitted when the BankID process is completed | `CustomEvent<any>` |
-| `started`   | Emitted when a BankID process is startd      | `CustomEvent<any>` |
+| Event       | Description | Type               |
+| ----------- | ----------- | ------------------ |
+| `cancelled` | Events      | `CustomEvent<any>` |
+| `completed` |             | `CustomEvent<any>` |
+| `started`   |             | `CustomEvent<any>` |
 
 
 ----------------------------------------------

@@ -9,11 +9,7 @@ import {
   Event,
   EventEmitter,
 } from '@stencil/core';
-import {
-  getQrCodeImageUrl,
-  useDevice,
-  getHashParams,
-} from './../../utils/utils';
+import { getQrCodeImageUrl, useDevice, getHashParams } from './../../utils/utils';
 import { createTranslateFunction } from './localization';
 import { Alert, StartButton, CancelButton } from './components';
 import axios from 'axios';
@@ -25,156 +21,88 @@ import axios from 'axios';
   assetsDirs: ['./../assets'],
 })
 export class JgroupBankId {
-  /**
-   * Emitted when a BankID process is cancelled
-   */
+  /** Events */
   @Event() cancelled: EventEmitter;
-
-  /**
-   * Emitted when the BankID process is completed
-   */
   @Event() completed: EventEmitter;
-
-  /**
-   * Emitted when a BankID process is startd
-   */
   @Event() started: EventEmitter;
 
-  /**
-   * The type of BankID action to perform
-   */
+  /** Props */
   @Prop() readonly type: 'auth' | 'sign';
+  @Prop() readonly signUrl: string;
+  @Prop() readonly authUrl: string;
+  @Prop() readonly collectUrl: string;
+  @Prop() readonly cancelUrl: string;
+  @Prop() readonly autoStartSingleOption = false;
+  @Prop() readonly darkTheme = false;
+  @Prop() readonly language: 'sv' | 'en' = null;
 
+  /** Watchers for prop validation */
   @Watch('type')
   validateType(newValue: string) {
     if (!['auth', 'sign'].includes(newValue)) {
-      this.throwError(
-        `The 'type' attribute is required and must be either 'auth' or 'sign'.`,
-      );
+      this.throwError(`The 'type' attribute is required and must be either 'auth' or 'sign'.`);
     }
   }
-
-  /**
-   * The URL responsible for initiating a sign process
-   */
-  @Prop() readonly signUrl: string;
-
-  /**
-   * Automatically start the BankID flow if only one option is available (desktop QR flow)
-   */
-  @Prop() readonly autoStartSingleOption = false;
 
   @Watch('signUrl')
   validateSignUrl(newValue: string) {
     if (this.type === 'sign' && newValue === undefined) {
-      this.throwError(
-        `The 'sign-url' attribute is required when 'type' is set to 'sign'.`,
-      );
+      this.throwError(`The 'sign-url' attribute is required when 'type' is set to 'sign'.`);
     }
   }
-
-  /**
-   * The URL responsible for initiating an auth process
-   */
-  @Prop() readonly authUrl: string;
 
   @Watch('authUrl')
   validateAuthUrl(newValue: string) {
     if (this.type === 'auth' && newValue === undefined) {
-      this.throwError(
-        `The 'auth-url' attribute is required when 'type' is set to 'auth'.`,
-      );
+      this.throwError(`The 'auth-url' attribute is required when 'type' is set to 'auth'.`);
     }
   }
-
-  /**
-   * The URL responsible for collecting the status of the process
-   */
-  @Prop() readonly collectUrl: string;
 
   @Watch('collectUrl')
   validateCollectUrl(newValue: string) {
-    if (newValue === undefined) {
-      this.throwError(`The 'collect-url' attribute is required.`);
-    }
+    if (!newValue) this.throwError(`The 'collect-url' attribute is required.`);
   }
-
-  /**
-   * The URL responsible for cancelling a started process
-   */
-  @Prop() readonly cancelUrl: string;
 
   @Watch('cancelUrl')
   validateCancelUrl(newValue: string) {
-    if (newValue === undefined) {
-      this.throwError(`The 'cancel-url' attribute is required.`);
-    }
+    if (!newValue) this.throwError(`The 'cancel-url' attribute is required.`);
   }
 
+  /** Visibility change listener */
   @Listen('visibilitychange', { target: 'document' })
   handleVisibilityChange() {
-    if (document.visibilityState === 'hidden') {
-      return;
-    }
+    if (document.visibilityState === 'hidden') return;
 
     const hashParams: { initiated?: string } = getHashParams(location.hash);
-
-    if (
-      hashParams.initiated !== undefined ||
-      window.history.state?.triggeredByUser === true
-    ) {
+    if (hashParams.initiated !== undefined || window.history.state?.triggeredByUser === true) {
       this.flowType = 'app';
       this.isInProgress = true;
       this.pollCollect();
     }
   }
 
-  /**
-   * Whether to use the dark theme
-   */
-  @Prop() readonly darkTheme = false;
-
-  /**
-   * The language to use for localization
-   */
-  @Prop() readonly language: 'sv' | 'en' = null;
-
+  /** State */
   @State() flowType: 'app' | 'qr';
-
   @State() isMobileOrTablet = null;
-
   @State() isStarting = false;
-
   @State() isStartingOnAnotherDevice = false;
-
   @State() isInProgress = null;
-
   @State() isCancelling = null;
-
   @State() statusHintCode: string = null;
-
   @State() status: string = null;
-
   @State() qrCodeImageUrl: string = null;
 
-  private axios = axios.create({
-    withCredentials: true,
-    withXSRFToken: true,
-  });
-
-  private timeout = null;
-
+  /** Internal */
+  private axios = axios.create({ withCredentials: true, withXSRFToken: true });
   private TAG = '[jgroup-bank-id]';
-
   private propsValid = true;
-
   private propsValidationErrorMessage = null;
-
   private translate = createTranslateFunction(this.language);
+  private isPolling = false;
 
+  /** Lifecycle */
   componentWillLoad() {
     this.validateProps();
-
     window.history.replaceState({}, null);
 
     this.init = this.init.bind(this);
@@ -189,10 +117,9 @@ export class JgroupBankId {
     }
   }
 
+  /** UI Rendering */
   render() {
-    if (!this.propsValid) {
-      return <p>{this.propsValidationErrorMessage}</p>;
-    }
+    if (!this.propsValid) return <p>{this.propsValidationErrorMessage}</p>;
 
     return (
       <Host>
@@ -203,11 +130,9 @@ export class JgroupBankId {
               darkTheme={this.darkTheme}
               onClick={this.init}
               isLoading={this.isStarting && !this.isStartingOnAnotherDevice}
-              text={
-                this.flowType === 'qr' && !this.isStartingOnAnotherDevice
-                  ? this.translate('start-qr')
-                  : this.translate('start-app')
-              }
+              text={this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+                ? this.translate('start-qr')
+                : this.translate('start-app')}
             />
             {this.isMobileOrTablet && (
               <div class="mt-4">
@@ -227,7 +152,7 @@ export class JgroupBankId {
           <Alert
             message={this.translate(
               `hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`,
-              `hintcode-${this.statusHintCode || 'unknown'}`,
+              `hintcode-${this.statusHintCode || 'unknown'}`
             )}
             type={this.status === 'failed' ? 'error' : 'info'}
             tryAgainButtonText={this.translate('try-again')}
@@ -254,26 +179,20 @@ export class JgroupBankId {
     );
   }
 
+  /** Computed */
   private get shouldRenderCancelButton() {
-    return this.flowType === 'qr' && this.isInProgress && this.timeout !== null;
+    return this.flowType === 'qr' && (this.isInProgress || this.isCancelling);
   }
 
   private get shouldRenderQrImage() {
-    return (
-      this.isInProgress &&
-      this.flowType === 'qr' &&
-      this.qrCodeImageUrl !== null
-    );
+    return this.isInProgress && this.flowType === 'qr' && this.qrCodeImageUrl !== null;
   }
 
   private get shouldRenderStatusHint() {
-    return (
-      this.statusHintCode !== null &&
-      this.statusHintCode !== undefined &&
-      this.isInProgress !== null
-    );
+    return this.statusHintCode !== null && this.isInProgress !== null;
   }
 
+  /** Actions */
   private startOnAnotherDevice() {
     this.isStartingOnAnotherDevice = true;
     this.flowType = 'qr';
@@ -282,7 +201,6 @@ export class JgroupBankId {
 
   private setFlowTypeBasedOnDevice() {
     const { isMobileOrTablet } = useDevice();
-
     this.isMobileOrTablet = isMobileOrTablet;
     this.flowType = isMobileOrTablet ? 'app' : 'qr';
   }
@@ -307,56 +225,52 @@ export class JgroupBankId {
 
   private async init() {
     const url = this.type === 'auth' ? this.authUrl : this.signUrl;
-
     this.isStarting = true;
-    this.started.emit();
 
     const transaction = await this.post(url);
 
-    if (transaction === null) {
+    if (!transaction) {
       this.reset();
       this.throwError(`Failed starting '${this.type}' transaction`);
       return;
     }
 
+    this.started.emit();
     window.history.pushState({ triggeredByUser: true }, null);
-
-    return this.handleInitComplete(transaction);
+    await this.handleInitComplete(transaction);
   }
 
   private async handleInitComplete({ autoStartToken, transactionId }) {
     if (this.flowType === 'qr') {
-      await this.pollCollect(transactionId);
       this.isStarting = false;
       this.isInProgress = true;
+      await this.pollCollect(transactionId);
     } else if (this.flowType === 'app') {
       const returnUrl = this.createReturnUrl();
-
       window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
     }
   }
 
-  private pollCollect(transactionId: string = null) {
-    if (this.timeout !== null) return;
-    const getResult = async () => {
+  private async pollCollect(transactionId: string = null) {
+    if (this.isPolling || !this.isInProgress) return;
+
+    this.isPolling = true;
+
+    while (this.isPolling && !this.isCancelling) {
       const response = await this.post(this.collectUrl);
 
-      if (response === null) {
-        console.warn(`${this.TAG} pollCollect returned null, clearing timeout`);
-        clearTimeout(this.timeout);
-
-        if (this.flowType === 'app') {
-          this.reset();
-        }
-        return;
+      if (!response) {
+        console.warn(`${this.TAG} pollCollect returned null`);
+        this.isPolling = false;
+        if (this.flowType === 'app') await this.reset();
+        break;
       }
 
       if (transactionId && response.transactionId !== transactionId) {
+        console.error(`${this.TAG} transactionId mismatch`);
+        this.isPolling = false;
         await this.reset();
-        console.error(
-          `${this.TAG} resetting: initial transactionId '${transactionId}' does not match the one returned from collect '${response.transactionId}'.`,
-        );
-        return;
+        break;
       }
 
       if (this.flowType === 'qr') {
@@ -368,40 +282,47 @@ export class JgroupBankId {
 
       switch (response.status) {
         case 'pending':
-          this.timeout = setTimeout(() => {
-            getResult();
-          }, 1000);
+          await this.delay(1000);
           break;
 
         case 'failed':
+          this.isPolling = false;
           this.isInProgress = false;
           break;
 
         case 'complete':
+          this.isPolling = false;
           this.isInProgress = false;
+          this.statusHintCode = null;
           window.location.hash = '';
           this.completed.emit(response);
-          // this.reset();
           break;
 
         default:
-          console.warn(
-            `${this.TAG} pollCollect returned unknown status '${response.status}'`,
-          );
+          console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);
+          this.isPolling = false;
           break;
       }
-    };
-
-    return getResult();
+    }
   }
 
-  private cancel() {
-    this.cancelled.emit();
-    this.reset();
+  private async cancel() {
+    if (this.isCancelling || !this.isInProgress) return;
+
+    this.isCancelling = true;
+    this.isPolling = false;
+
+    try {
+      await this.post(this.cancelUrl);
+      this.cancelled.emit();
+    } finally {
+      this.isCancelling = false;
+      await this.reset(true); // skip the cancel request inside reset
+    }
   }
 
-  private async reset() {
-    if (this.isInProgress) {
+  private async reset(skipCancel = false) {
+    if (this.isInProgress && !skipCancel) {
       this.isCancelling = true;
       await this.post(this.cancelUrl);
     }
@@ -415,26 +336,16 @@ export class JgroupBankId {
     this.status = null;
     this.qrCodeImageUrl = null;
     this.setFlowTypeBasedOnDevice();
-    clearTimeout(this.timeout);
-    this.timeout = null;
+    this.isPolling = false;
   }
 
   private createReturnUrl() {
     const device = useDevice();
-
     const location = window.location.href.replace('#', '');
 
-    if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) {
-      return encodeURIComponent('googlechrome://');
-    }
-    if (device.isFirefoxOnAppleDevice) {
-      return encodeURIComponent('firefox://');
-    }
-    if (device.isOperaTouchOnAppleDevice) {
-      return encodeURIComponent(
-        `${location.replace('http', 'touch-http')}#initiated=true`,
-      );
-    }
+    if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile) return encodeURIComponent('googlechrome://');
+    if (device.isFirefoxOnAppleDevice) return encodeURIComponent('firefox://');
+    if (device.isOperaTouchOnAppleDevice) return encodeURIComponent(`${location.replace('http', 'touch-http')}#initiated=true`);
 
     return encodeURIComponent(`${location}#initiated=true`);
   }
@@ -442,11 +353,14 @@ export class JgroupBankId {
   private async post(url: string) {
     try {
       const response = await this.axios.post(url);
-
       return response.data;
     } catch (error) {
       console.error(`${this.TAG} request failed`, error);
       return null;
     }
+  }
+
+  private delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

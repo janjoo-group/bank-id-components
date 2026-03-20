@@ -13,7 +13,6 @@ import {
   getQrCodeImageUrl,
   useDevice,
   getHashParams,
-  delay,
 } from './../../utils/utils';
 import { createTranslateFunction } from './localization';
 import { Alert, StartButton, CancelButton } from './components';
@@ -163,7 +162,7 @@ export class JgroupBankId {
     withXSRFToken: true,
   });
 
-  private isPolling = false;
+  private timeout = null;
 
   private TAG = '[jgroup-bank-id]';
 
@@ -256,7 +255,7 @@ export class JgroupBankId {
   }
 
   private get shouldRenderCancelButton() {
-    return this.flowType === 'qr' && this.isInProgress && this.isPolling;
+    return this.flowType === 'qr' && this.isInProgress && this.timeout !== null;
   }
 
   private get shouldRenderQrImage() {
@@ -325,31 +324,27 @@ export class JgroupBankId {
     return this.handleInitComplete(transaction);
   }
 
-  private handleInitComplete({ autoStartToken, transactionId }) {
+  private async handleInitComplete({ autoStartToken, transactionId }) {
     if (this.flowType === 'qr') {
+      await this.pollCollect(transactionId);
       this.isStarting = false;
       this.isInProgress = true;
-      this.pollCollect(transactionId); // loop runs async
     } else if (this.flowType === 'app') {
       const returnUrl = this.createReturnUrl();
+
       window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
     }
   }
 
-  private async pollCollect(transactionId: string = null) {
-    if (this.isPolling) return;
-
-    this.isPolling = true;
-    this.isInProgress = true; // ensure UI is in progress
-
-    while (this.isPolling) {
+  private pollCollect(transactionId: string = null) {
+    if (this.timeout !== null) return;
+    const getResult = async () => {
       const response = await this.post(this.collectUrl);
 
-      if (!this.isPolling) return;
+      if (response === null) {
+        console.warn(`${this.TAG} pollCollect returned null, clearing timeout`);
+        clearTimeout(this.timeout);
 
-      if (!response) {
-        console.warn(`${this.TAG} pollCollect returned null`);
-        this.stopPolling();
         if (this.flowType === 'app') {
           this.reset();
         }
@@ -358,12 +353,13 @@ export class JgroupBankId {
 
       if (transactionId && response.transactionId !== transactionId) {
         await this.reset();
-        console.error(`${this.TAG} transactionId mismatch`);
+        console.error(
+          `${this.TAG} resetting: initial transactionId '${transactionId}' does not match the one returned from collect '${response.transactionId}'.`,
+        );
         return;
       }
 
-      // Update QR code if in QR flow
-      if (this.flowType === 'qr' && response.qrCode) {
+      if (this.flowType === 'qr') {
         this.qrCodeImageUrl = await getQrCodeImageUrl(response.qrCode);
       }
 
@@ -372,31 +368,31 @@ export class JgroupBankId {
 
       switch (response.status) {
         case 'pending':
-          // wait 1s before next iteration
-          await delay(1000);
+          this.timeout = setTimeout(() => {
+            getResult();
+          }, 1000);
           break;
 
         case 'failed':
-          this.stopPolling();
           this.isInProgress = false;
-          return;
+          break;
 
         case 'complete':
-          this.stopPolling();
           this.isInProgress = false;
           window.location.hash = '';
           this.completed.emit(response);
-          return;
+          // this.reset();
+          break;
 
         default:
-          console.warn(`${this.TAG} unknown status '${response.status}'`);
-          await delay(1000);
+          console.warn(
+            `${this.TAG} pollCollect returned unknown status '${response.status}'`,
+          );
+          break;
       }
-    }
-  }
+    };
 
-  private stopPolling() {
-    this.isPolling = false;
+    return getResult();
   }
 
   private cancel() {
@@ -405,8 +401,6 @@ export class JgroupBankId {
   }
 
   private async reset() {
-    this.stopPolling();
-
     if (this.isInProgress) {
       this.isCancelling = true;
       await this.post(this.cancelUrl);
@@ -421,6 +415,8 @@ export class JgroupBankId {
     this.status = null;
     this.qrCodeImageUrl = null;
     this.setFlowTypeBasedOnDevice();
+    clearTimeout(this.timeout);
+    this.timeout = null;
   }
 
   private createReturnUrl() {

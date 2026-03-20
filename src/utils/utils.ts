@@ -54,7 +54,3 @@ export function getHashParams(hash: string) {
     {},
   );
 }
-
-export function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}

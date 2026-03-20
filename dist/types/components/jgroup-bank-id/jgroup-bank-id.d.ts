@@ -60,7 +60,7 @@ export declare class JgroupBankId {
     status: string;
     qrCodeImageUrl: string;
     private axios;
-    private isPolling;
+    private timeout;
     private TAG;
     private propsValid;
     private propsValidationErrorMessage;
@@ -77,7 +77,6 @@ export declare class JgroupBankId {
     private init;
     private handleInitComplete;
     private pollCollect;
-    private stopPolling;
     private cancel;
     private reset;
     private createReturnUrl;

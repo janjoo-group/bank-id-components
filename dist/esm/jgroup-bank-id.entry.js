@@ -2988,9 +2988,6 @@ function getHashParams(hash) {
     const params = new URLSearchParams(hash.substring(1));
     return [...params.entries()].reduce((acc, curr) => (Object.assign(Object.assign({}, acc), { [curr[0]]: curr[1] })), {});
 }
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 const htmlLang$1 = "sv";
 const locale$1 = "sv-SE";
@@ -10925,7 +10922,7 @@ const JgroupBankId = class {
             withCredentials: true,
             withXSRFToken: true,
         });
-        this.isPolling = false;
+        this.timeout = null;
         this.TAG = '[jgroup-bank-id]';
         this.propsValid = true;
         this.propsValidationErrorMessage = null;
@@ -11008,7 +11005,7 @@ const JgroupBankId = class {
                 : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: "mt-4" }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (h("p", { class: "text-center animate-fade" }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
     get shouldRenderCancelButton() {
-        return this.flowType === 'qr' && this.isInProgress && this.isPolling;
+        return this.flowType === 'qr' && this.isInProgress && this.timeout !== null;
     }
     get shouldRenderQrImage() {
         return (this.isInProgress &&
@@ -11060,29 +11057,25 @@ const JgroupBankId = class {
         window.history.pushState({ triggeredByUser: true }, null);
         return this.handleInitComplete(transaction);
     }
-    handleInitComplete({ autoStartToken, transactionId }) {
+    async handleInitComplete({ autoStartToken, transactionId }) {
         if (this.flowType === 'qr') {
+            await this.pollCollect(transactionId);
             this.isStarting = false;
             this.isInProgress = true;
-            this.pollCollect(transactionId); // loop runs async
         }
         else if (this.flowType === 'app') {
             const returnUrl = this.createReturnUrl();
             window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
         }
     }
-    async pollCollect(transactionId = null) {
-        if (this.isPolling)
+    pollCollect(transactionId = null) {
+        if (this.timeout !== null)
             return;
-        this.isPolling = true;
-        this.isInProgress = true; // ensure UI is in progress
-        while (this.isPolling) {
+        const getResult = async () => {
             const response = await this.post(this.collectUrl);
-            if (!this.isPolling)
-                return;
-            if (!response) {
-                console.warn(`${this.TAG} pollCollect returned null`);
-                this.stopPolling();
+            if (response === null) {
+                console.warn(`${this.TAG} pollCollect returned null, clearing timeout`);
+                clearTimeout(this.timeout);
                 if (this.flowType === 'app') {
                     this.reset();
                 }
@@ -11090,45 +11083,41 @@ const JgroupBankId = class {
             }
             if (transactionId && response.transactionId !== transactionId) {
                 await this.reset();
-                console.error(`${this.TAG} transactionId mismatch`);
+                console.error(`${this.TAG} resetting: initial transactionId '${transactionId}' does not match the one returned from collect '${response.transactionId}'.`);
                 return;
             }
-            // Update QR code if in QR flow
-            if (this.flowType === 'qr' && response.qrCode) {
+            if (this.flowType === 'qr') {
                 this.qrCodeImageUrl = await getQrCodeImageUrl(response.qrCode);
             }
             this.statusHintCode = response.hintCode;
             this.status = response.status;
             switch (response.status) {
                 case 'pending':
-                    // wait 1s before next iteration
-                    await delay(1000);
+                    this.timeout = setTimeout(() => {
+                        getResult();
+                    }, 1000);
                     break;
                 case 'failed':
-                    this.stopPolling();
                     this.isInProgress = false;
-                    return;
+                    break;
                 case 'complete':
-                    this.stopPolling();
                     this.isInProgress = false;
                     window.location.hash = '';
                     this.completed.emit(response);
-                    return;
+                    // this.reset();
+                    break;
                 default:
-                    console.warn(`${this.TAG} unknown status '${response.status}'`);
-                    await delay(1000);
+                    console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);
+                    break;
             }
-        }
-    }
-    stopPolling() {
-        this.isPolling = false;
+        };
+        return getResult();
     }
     cancel() {
         this.cancelled.emit();
         this.reset();
     }
     async reset() {
-        this.stopPolling();
         if (this.isInProgress) {
             this.isCancelling = true;
             await this.post(this.cancelUrl);
@@ -11142,6 +11131,8 @@ const JgroupBankId = class {
         this.status = null;
         this.qrCodeImageUrl = null;
         this.setFlowTypeBasedOnDevice();
+        clearTimeout(this.timeout);
+        this.timeout = null;
     }
     createReturnUrl() {
         const device = useDevice();

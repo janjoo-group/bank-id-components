@@ -325,14 +325,13 @@ export class JgroupBankId {
     return this.handleInitComplete(transaction);
   }
 
-  private async handleInitComplete({ autoStartToken, transactionId }) {
+  private handleInitComplete({ autoStartToken, transactionId }) {
     if (this.flowType === 'qr') {
-      await this.pollCollect(transactionId);
       this.isStarting = false;
       this.isInProgress = true;
+      this.pollCollect(transactionId); // loop runs async
     } else if (this.flowType === 'app') {
       const returnUrl = this.createReturnUrl();
-
       window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
     }
   }
@@ -341,32 +340,30 @@ export class JgroupBankId {
     if (this.isPolling) return;
 
     this.isPolling = true;
+    this.isInProgress = true; // ensure UI is in progress
 
     while (this.isPolling) {
       const response = await this.post(this.collectUrl);
 
       if (!this.isPolling) return;
 
-      if (response === null) {
+      if (!response) {
         console.warn(`${this.TAG} pollCollect returned null`);
         this.stopPolling();
-
         if (this.flowType === 'app') {
           this.reset();
         }
-
         return;
       }
 
       if (transactionId && response.transactionId !== transactionId) {
         await this.reset();
-        console.error(
-          `${this.TAG} resetting: initial transactionId '${transactionId}' does not match '${response.transactionId}'.`,
-        );
+        console.error(`${this.TAG} transactionId mismatch`);
         return;
       }
 
-      if (this.flowType === 'qr') {
+      // Update QR code if in QR flow
+      if (this.flowType === 'qr' && response.qrCode) {
         this.qrCodeImageUrl = await getQrCodeImageUrl(response.qrCode);
       }
 
@@ -375,6 +372,7 @@ export class JgroupBankId {
 
       switch (response.status) {
         case 'pending':
+          // wait 1s before next iteration
           await delay(1000);
           break;
 
@@ -391,9 +389,7 @@ export class JgroupBankId {
           return;
 
         default:
-          console.warn(
-            `${this.TAG} pollCollect returned unknown status '${response.status}'`,
-          );
+          console.warn(`${this.TAG} unknown status '${response.status}'`);
           await delay(1000);
       }
     }

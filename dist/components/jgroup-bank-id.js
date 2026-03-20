@@ -11118,12 +11118,12 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
         this.isPolling = false;
         try {
             await this.post(this.cancelUrl);
-            this.cancelled.emit();
         }
         finally {
             this.isCancelling = false;
             await this.reset(true); // skip the cancel request inside reset
         }
+        this.cancelled.emit();
     }
     async reset(skipCancel = false) {
         if (this.isInProgress && !skipCancel) {

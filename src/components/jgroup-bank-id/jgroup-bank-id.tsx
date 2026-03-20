@@ -314,11 +314,12 @@ export class JgroupBankId {
 
     try {
       await this.post(this.cancelUrl);
-      this.cancelled.emit();
     } finally {
       this.isCancelling = false;
       await this.reset(true); // skip the cancel request inside reset
     }
+
+    this.cancelled.emit();
   }
 
   private async reset(skipCancel = false) {

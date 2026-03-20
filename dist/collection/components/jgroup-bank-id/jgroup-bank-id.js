@@ -1,7 +1,5 @@
 import { Host, h, } from "@stencil/core";
-import { getQrCodeImageUrl, useDevice, 
-// readCookie,
-getHashParams, } from "./../../utils/utils";
+import { getQrCodeImageUrl, useDevice, getHashParams, delay, } from "./../../utils/utils";
 import { createTranslateFunction } from "./localization";
 import { Alert, StartButton, CancelButton } from "./components";
 import axios from "axios";
@@ -11,7 +9,7 @@ export class JgroupBankId {
             withCredentials: true,
             withXSRFToken: true,
         });
-        this.timeout = null;
+        this.isPolling = false;
         this.TAG = '[jgroup-bank-id]';
         this.propsValid = true;
         this.propsValidationErrorMessage = null;
@@ -94,7 +92,7 @@ export class JgroupBankId {
                 : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: "mt-4" }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (h("p", { class: "text-center animate-fade" }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
     get shouldRenderCancelButton() {
-        return this.flowType === 'qr' && this.isInProgress && this.timeout !== null;
+        return this.flowType === 'qr' && this.isInProgress && this.isPolling;
     }
     get shouldRenderQrImage() {
         return (this.isInProgress &&
@@ -157,14 +155,17 @@ export class JgroupBankId {
             window.location.href = `https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${returnUrl}`;
         }
     }
-    pollCollect(transactionId = null) {
-        if (this.timeout !== null)
+    async pollCollect(transactionId = null) {
+        if (this.isPolling)
             return;
-        const getResult = async () => {
+        this.isPolling = true;
+        while (this.isPolling) {
             const response = await this.post(this.collectUrl);
+            if (!this.isPolling)
+                return;
             if (response === null) {
-                console.warn(`${this.TAG} pollCollect returned null, clearing timeout`);
-                clearTimeout(this.timeout);
+                console.warn(`${this.TAG} pollCollect returned null`);
+                this.stopPolling();
                 if (this.flowType === 'app') {
                     this.reset();
                 }
@@ -172,7 +173,7 @@ export class JgroupBankId {
             }
             if (transactionId && response.transactionId !== transactionId) {
                 await this.reset();
-                console.error(`${this.TAG} resetting: initial transactionId '${transactionId}' does not match the one returned from collect '${response.transactionId}'.`);
+                console.error(`${this.TAG} resetting: initial transactionId '${transactionId}' does not match '${response.transactionId}'.`);
                 return;
             }
             if (this.flowType === 'qr') {
@@ -182,31 +183,33 @@ export class JgroupBankId {
             this.status = response.status;
             switch (response.status) {
                 case 'pending':
-                    this.timeout = setTimeout(() => {
-                        getResult();
-                    }, 1000);
+                    await delay(1000);
                     break;
                 case 'failed':
+                    this.stopPolling();
                     this.isInProgress = false;
-                    break;
+                    return;
                 case 'complete':
+                    this.stopPolling();
                     this.isInProgress = false;
                     window.location.hash = '';
                     this.completed.emit(response);
-                    // this.reset();
-                    break;
+                    return;
                 default:
                     console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);
-                    break;
+                    await delay(1000);
             }
-        };
-        return getResult();
+        }
+    }
+    stopPolling() {
+        this.isPolling = false;
     }
     cancel() {
         this.cancelled.emit();
         this.reset();
     }
     async reset() {
+        this.stopPolling();
         if (this.isInProgress) {
             this.isCancelling = true;
             await this.post(this.cancelUrl);
@@ -220,8 +223,6 @@ export class JgroupBankId {
         this.status = null;
         this.qrCodeImageUrl = null;
         this.setFlowTypeBasedOnDevice();
-        clearTimeout(this.timeout);
-        this.timeout = null;
     }
     createReturnUrl() {
         const device = useDevice();

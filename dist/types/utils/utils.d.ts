@@ -8,3 +8,4 @@ export declare const useDevice: () => {
 };
 export declare function readCookie(name: string): string;
 export declare function getHashParams(hash: string): {};
+export declare function delay(ms: number): Promise<unknown>;

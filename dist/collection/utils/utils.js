@@ -33,4 +33,7 @@ export function getHashParams(hash) {
     const params = new URLSearchParams(hash.substring(1));
     return [...params.entries()].reduce((acc, curr) => (Object.assign(Object.assign({}, acc), { [curr[0]]: curr[1] })), {});
 }
+export function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 //# sourceMappingURL=utils.js.map

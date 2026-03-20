@@ -11062,11 +11062,11 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
         window.history.pushState({ triggeredByUser: true }, null);
         return this.handleInitComplete(transaction);
     }
-    async handleInitComplete({ autoStartToken, transactionId }) {
+    handleInitComplete({ autoStartToken, transactionId }) {
         if (this.flowType === 'qr') {
-            await this.pollCollect(transactionId);
             this.isStarting = false;
             this.isInProgress = true;
+            this.pollCollect(transactionId); // loop runs async
         }
         else if (this.flowType === 'app') {
             const returnUrl = this.createReturnUrl();
@@ -11077,11 +11077,12 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
         if (this.isPolling)
             return;
         this.isPolling = true;
+        this.isInProgress = true; // ensure UI is in progress
         while (this.isPolling) {
             const response = await this.post(this.collectUrl);
             if (!this.isPolling)
                 return;
-            if (response === null) {
+            if (!response) {
                 console.warn(`${this.TAG} pollCollect returned null`);
                 this.stopPolling();
                 if (this.flowType === 'app') {
@@ -11091,16 +11092,18 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
             }
             if (transactionId && response.transactionId !== transactionId) {
                 await this.reset();
-                console.error(`${this.TAG} resetting: initial transactionId '${transactionId}' does not match '${response.transactionId}'.`);
+                console.error(`${this.TAG} transactionId mismatch`);
                 return;
             }
-            if (this.flowType === 'qr') {
+            // Update QR code if in QR flow
+            if (this.flowType === 'qr' && response.qrCode) {
                 this.qrCodeImageUrl = await getQrCodeImageUrl(response.qrCode);
             }
             this.statusHintCode = response.hintCode;
             this.status = response.status;
             switch (response.status) {
                 case 'pending':
+                    // wait 1s before next iteration
                     await delay(1000);
                     break;
                 case 'failed':
@@ -11114,7 +11117,7 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
                     this.completed.emit(response);
                     return;
                 default:
-                    console.warn(`${this.TAG} pollCollect returned unknown status '${response.status}'`);
+                    console.warn(`${this.TAG} unknown status '${response.status}'`);
                     await delay(1000);
             }
         }

@@ -38,6 +38,7 @@ export declare class JgroupBankId {
     private propsValidationErrorMessage;
     private translate;
     private isPolling;
+    private currentTransactionId;
     /** Lifecycle */
     componentWillLoad(): void;
     /** UI Rendering */

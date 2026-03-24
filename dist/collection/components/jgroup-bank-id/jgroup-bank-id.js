@@ -12,6 +12,7 @@ export class JgroupBankId {
         this.propsValidationErrorMessage = null;
         this.translate = createTranslateFunction(this.language);
         this.isPolling = false;
+        this.currentTransactionId = null;
         this.type = undefined;
         this.signUrl = undefined;
         this.authUrl = undefined;
@@ -60,10 +61,11 @@ export class JgroupBankId {
         if (document.visibilityState === 'hidden')
             return;
         const hashParams = getHashParams(location.hash);
-        if (hashParams.initiated !== undefined || ((_a = window.history.state) === null || _a === void 0 ? void 0 : _a.triggeredByUser) === true) {
-            this.flowType = 'app';
-            this.isInProgress = true;
-            this.pollCollect();
+        const userStarted = ((_a = window.history.state) === null || _a === void 0 ? void 0 : _a.triggeredByUser) === true;
+        const flowInitiated = hashParams.initiated !== undefined;
+        // Only resume polling if the flow was genuinely started
+        if (this.isInProgress && !this.isPolling && this.currentTransactionId && (flowInitiated || userStarted)) {
+            this.pollCollect(this.currentTransactionId);
         }
     }
     /** Lifecycle */
@@ -140,6 +142,7 @@ export class JgroupBankId {
         await this.handleInitComplete(transaction);
     }
     async handleInitComplete({ autoStartToken, transactionId }) {
+        this.currentTransactionId = transactionId;
         if (this.flowType === 'qr') {
             this.isStarting = false;
             this.isInProgress = true;

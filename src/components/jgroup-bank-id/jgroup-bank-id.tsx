@@ -74,10 +74,12 @@ export class JgroupBankId {
     if (document.visibilityState === 'hidden') return;
 
     const hashParams: { initiated?: string } = getHashParams(location.hash);
-    if (hashParams.initiated !== undefined || window.history.state?.triggeredByUser === true) {
-      this.flowType = 'app';
-      this.isInProgress = true;
-      this.pollCollect();
+    const userStarted = window.history.state?.triggeredByUser === true;
+    const flowInitiated = hashParams.initiated !== undefined;
+
+    // Only resume polling if the flow was genuinely started
+    if (this.isInProgress && !this.isPolling && this.currentTransactionId && (flowInitiated || userStarted)) {
+      this.pollCollect(this.currentTransactionId);
     }
   }
 
@@ -99,6 +101,7 @@ export class JgroupBankId {
   private propsValidationErrorMessage = null;
   private translate = createTranslateFunction(this.language);
   private isPolling = false;
+  private currentTransactionId = null;
 
   /** Lifecycle */
   componentWillLoad() {
@@ -241,6 +244,7 @@ export class JgroupBankId {
   }
 
   private async handleInitComplete({ autoStartToken, transactionId }) {
+    this.currentTransactionId = transactionId;
     if (this.flowType === 'qr') {
       this.isStarting = false;
       this.isInProgress = true;

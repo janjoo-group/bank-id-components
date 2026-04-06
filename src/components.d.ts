@@ -50,10 +50,10 @@ declare global {
 }
 declare namespace LocalJSX {
     interface JgroupBankId {
-        "authUrl"?: string;
+        "authUrl": string;
         "autoStartSingleOption"?: false;
-        "cancelUrl"?: string;
-        "collectUrl"?: string;
+        "cancelUrl": string;
+        "collectUrl": string;
         "darkTheme"?: false;
         "language"?: 'sv' | 'en';
         /**
@@ -62,11 +62,11 @@ declare namespace LocalJSX {
         "onCancelled"?: (event: JgroupBankIdCustomEvent<any>) => void;
         "onCompleted"?: (event: JgroupBankIdCustomEvent<any>) => void;
         "onStarted"?: (event: JgroupBankIdCustomEvent<any>) => void;
-        "signUrl"?: string;
+        "signUrl": string;
         /**
           * Props
          */
-        "type"?: 'auth' | 'sign';
+        "type": 'auth' | 'sign';
     }
     interface IntrinsicElements {
         "jgroup-bank-id": JgroupBankId;

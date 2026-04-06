@@ -3,7 +3,7 @@ import engJson from './eng.json';
 
 const translationSets = [sweJson, engJson];
 
-const getTranslationSet = (locale = null) => {
+const getTranslationSet = (locale: 'sv' | 'en' = 'sv'): any => {
   return (
     translationSets.find(
       (set) =>
@@ -15,7 +15,7 @@ const getTranslationSet = (locale = null) => {
   );
 };
 
-export function createTranslateFunction(language = null) {
+export function createTranslateFunction(language: 'sv' | 'en' = 'sv') {
   const translationSet = getTranslationSet(language);
 
   return function translate(...keys: string[]) {

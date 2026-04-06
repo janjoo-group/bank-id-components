@@ -23,14 +23,14 @@ export declare class JgroupBankId {
     handleVisibilityChange(): void;
     /** State */
     flowType: 'app' | 'qr';
-    isMobileOrTablet: any;
+    isMobileOrTablet: boolean;
     isStarting: boolean;
     isStartingOnAnotherDevice: boolean;
-    isInProgress: any;
-    isCancelling: any;
-    statusHintCode: string;
-    status: string;
-    qrCodeImageUrl: string;
+    isInProgress: boolean;
+    isCancelling: boolean;
+    statusHintCode: string | null;
+    status: string | null;
+    qrCodeImageUrl: string | null;
     /** Internal */
     private axios;
     private TAG;

@@ -22,19 +22,19 @@ import axios from 'axios';
 })
 export class JgroupBankId {
   /** Events */
-  @Event() cancelled: EventEmitter;
-  @Event() completed: EventEmitter;
-  @Event() started: EventEmitter;
+  @Event() cancelled!: EventEmitter;
+  @Event() completed!: EventEmitter;
+  @Event() started!: EventEmitter;
 
   /** Props */
-  @Prop() readonly type: 'auth' | 'sign';
-  @Prop() readonly signUrl: string;
-  @Prop() readonly authUrl: string;
-  @Prop() readonly collectUrl: string;
-  @Prop() readonly cancelUrl: string;
+  @Prop() readonly type!: 'auth' | 'sign';
+  @Prop() readonly signUrl!: string;
+  @Prop() readonly authUrl!: string;
+  @Prop() readonly collectUrl!: string;
+  @Prop() readonly cancelUrl!: string;
   @Prop() readonly autoStartSingleOption = false;
   @Prop() readonly darkTheme = false;
-  @Prop() readonly language: 'sv' | 'en' = null;
+  @Prop() readonly language: 'sv' | 'en' = 'sv';
 
   /** Watchers for prop validation */
   @Watch('type')
@@ -84,29 +84,29 @@ export class JgroupBankId {
   }
 
   /** State */
-  @State() flowType: 'app' | 'qr';
-  @State() isMobileOrTablet = null;
-  @State() isStarting = false;
-  @State() isStartingOnAnotherDevice = false;
-  @State() isInProgress = null;
-  @State() isCancelling = null;
-  @State() statusHintCode: string = null;
-  @State() status: string = null;
-  @State() qrCodeImageUrl: string = null;
+  @State() flowType!: 'app' | 'qr';
+  @State() isMobileOrTablet: boolean = false;
+  @State() isStarting: boolean = false;
+  @State() isStartingOnAnotherDevice: boolean = false;
+  @State() isInProgress: boolean = false;
+  @State() isCancelling: boolean = false;
+  @State() statusHintCode: string | null = null;
+  @State() status: string | null = null;
+  @State() qrCodeImageUrl: string | null = null;
 
   /** Internal */
   private axios = axios.create({ withCredentials: true, withXSRFToken: true });
   private TAG = '[jgroup-bank-id]';
   private propsValid = true;
-  private propsValidationErrorMessage = null;
+  private propsValidationErrorMessage: string | null = null;
   private translate = createTranslateFunction(this.language);
   private isPolling = false;
-  private currentTransactionId = null;
+  private currentTransactionId: string | null = null;
 
   /** Lifecycle */
   componentWillLoad() {
     this.validateProps();
-    window.history.replaceState({}, null);
+    window.history.replaceState({}, '', null);
 
     this.init = this.init.bind(this);
     this.startOnAnotherDevice = this.startOnAnotherDevice.bind(this);
@@ -126,7 +126,7 @@ export class JgroupBankId {
 
     return (
       <Host>
-        {this.isInProgress === null && (
+        {this.isInProgress === false && (
           <div class="flex flex-col items-center">
             <StartButton
               isOutlined={false}
@@ -165,7 +165,7 @@ export class JgroupBankId {
         )}
 
         {this.shouldRenderQrImage && (
-          <img src={this.qrCodeImageUrl} class="mx-auto mb-4 animate-fade" />
+          <img src={this.qrCodeImageUrl ?? undefined} class="mx-auto mb-4 animate-fade" />
         )}
 
         {this.shouldRenderCancelButton && (
@@ -215,7 +215,7 @@ export class JgroupBankId {
       this.validateAuthUrl(this.authUrl);
       this.validateCollectUrl(this.collectUrl);
       this.validateCancelUrl(this.cancelUrl);
-    } catch (error) {
+    } catch (error: any) {
       this.propsValid = false;
       this.propsValidationErrorMessage = error.message;
       console.error(error);
@@ -239,15 +239,15 @@ export class JgroupBankId {
     }
 
     this.started.emit();
-    window.history.pushState({ triggeredByUser: true }, null);
+    window.history.pushState({ triggeredByUser: true }, '', null);
     await this.handleInitComplete(transaction);
   }
 
-  private async handleInitComplete({ autoStartToken, transactionId }) {
+  private async handleInitComplete({ autoStartToken, transactionId }: { autoStartToken: string; transactionId: string }) {
     this.currentTransactionId = transactionId;
+    this.isInProgress = true;
     if (this.flowType === 'qr') {
       this.isStarting = false;
-      this.isInProgress = true;
       await this.pollCollect(transactionId);
     } else if (this.flowType === 'app') {
       const returnUrl = this.createReturnUrl();
@@ -255,7 +255,7 @@ export class JgroupBankId {
     }
   }
 
-  private async pollCollect(transactionId: string = null) {
+  private async pollCollect(transactionId: string | null = null) {
     if (this.isPolling || !this.isInProgress) return;
 
     this.isPolling = true;
@@ -332,11 +332,11 @@ export class JgroupBankId {
       await this.post(this.cancelUrl);
     }
 
-    window.history.pushState({}, null);
-    this.isInProgress = null;
+    window.history.pushState({}, '', null);
+    this.isInProgress = false;
     this.isStarting = false;
     this.isStartingOnAnotherDevice = false;
-    this.isCancelling = null;
+    this.isCancelling = false;
     this.statusHintCode = null;
     this.status = null;
     this.qrCodeImageUrl = null;

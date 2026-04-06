@@ -3050,13 +3050,13 @@ const engJson = {
 };
 
 const translationSets = [sweJson, engJson];
-const getTranslationSet = (locale = null) => {
+const getTranslationSet = (locale = 'sv') => {
     return (translationSets.find((set) => set.htmlLang === locale ||
         set.locale === locale ||
         navigator.language.includes(set.htmlLang) ||
         navigator.language.includes(set.locale)) || engJson);
 };
-function createTranslateFunction(language = null) {
+function createTranslateFunction(language = 'sv') {
     const translationSet = getTranslationSet(language);
     return function translate(...keys) {
         // not needed?
@@ -10935,13 +10935,13 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
         this.cancelUrl = undefined;
         this.autoStartSingleOption = false;
         this.darkTheme = false;
-        this.language = null;
+        this.language = 'sv';
         this.flowType = undefined;
-        this.isMobileOrTablet = null;
+        this.isMobileOrTablet = false;
         this.isStarting = false;
         this.isStartingOnAnotherDevice = false;
-        this.isInProgress = null;
-        this.isCancelling = null;
+        this.isInProgress = false;
+        this.isCancelling = false;
         this.statusHintCode = null;
         this.status = null;
         this.qrCodeImageUrl = null;
@@ -10986,7 +10986,7 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
     /** Lifecycle */
     componentWillLoad() {
         this.validateProps();
-        window.history.replaceState({}, null);
+        window.history.replaceState({}, '', null);
         this.init = this.init.bind(this);
         this.startOnAnotherDevice = this.startOnAnotherDevice.bind(this);
         this.pollCollect = this.pollCollect.bind(this);
@@ -10999,11 +10999,12 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
     }
     /** UI Rendering */
     render() {
+        var _a;
         if (!this.propsValid)
             return h("p", null, this.propsValidationErrorMessage);
-        return (h(Host, null, this.isInProgress === null && (h("div", { class: "flex flex-col items-center" }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+        return (h(Host, null, this.isInProgress === false && (h("div", { class: "flex flex-col items-center" }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
-                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: "mt-4" }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: this.qrCodeImageUrl, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (h("p", { class: "text-center animate-fade" }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
+                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: "mt-4" }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (h("p", { class: "text-center animate-fade" }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
     /** Computed */
     get shouldRenderCancelButton() {
@@ -11053,14 +11054,14 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
             return;
         }
         this.started.emit();
-        window.history.pushState({ triggeredByUser: true }, null);
+        window.history.pushState({ triggeredByUser: true }, '', null);
         await this.handleInitComplete(transaction);
     }
     async handleInitComplete({ autoStartToken, transactionId }) {
         this.currentTransactionId = transactionId;
+        this.isInProgress = true;
         if (this.flowType === 'qr') {
             this.isStarting = false;
-            this.isInProgress = true;
             await this.pollCollect(transactionId);
         }
         else if (this.flowType === 'app') {
@@ -11133,11 +11134,11 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
             this.isCancelling = true;
             await this.post(this.cancelUrl);
         }
-        window.history.pushState({}, null);
-        this.isInProgress = null;
+        window.history.pushState({}, '', null);
+        this.isInProgress = false;
         this.isStarting = false;
         this.isStartingOnAnotherDevice = false;
-        this.isCancelling = null;
+        this.isCancelling = false;
         this.statusHintCode = null;
         this.status = null;
         this.qrCodeImageUrl = null;

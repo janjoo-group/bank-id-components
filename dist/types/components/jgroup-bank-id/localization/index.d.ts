@@ -1,1 +1,1 @@
-export declare function createTranslateFunction(language?: any): (...keys: string[]) => any;
+export declare function createTranslateFunction(language?: 'sv' | 'en'): (...keys: string[]) => any;

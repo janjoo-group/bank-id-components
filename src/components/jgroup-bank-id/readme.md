@@ -7,16 +7,16 @@
 
 ## Properties
 
-| Property                | Attribute                  | Description | Type               | Default     |
-| ----------------------- | -------------------------- | ----------- | ------------------ | ----------- |
-| `authUrl`               | `auth-url`                 |             | `string`           | `undefined` |
-| `autoStartSingleOption` | `auto-start-single-option` |             | `boolean`          | `false`     |
-| `cancelUrl`             | `cancel-url`               |             | `string`           | `undefined` |
-| `collectUrl`            | `collect-url`              |             | `string`           | `undefined` |
-| `darkTheme`             | `dark-theme`               |             | `boolean`          | `false`     |
-| `language`              | `language`                 |             | `"en" \| "sv"`     | `null`      |
-| `signUrl`               | `sign-url`                 |             | `string`           | `undefined` |
-| `type`                  | `type`                     | Props       | `"auth" \| "sign"` | `undefined` |
+| Property                  | Attribute                  | Description | Type               | Default     |
+| ------------------------- | -------------------------- | ----------- | ------------------ | ----------- |
+| `authUrl` _(required)_    | `auth-url`                 |             | `string`           | `undefined` |
+| `autoStartSingleOption`   | `auto-start-single-option` |             | `boolean`          | `false`     |
+| `cancelUrl` _(required)_  | `cancel-url`               |             | `string`           | `undefined` |
+| `collectUrl` _(required)_ | `collect-url`              |             | `string`           | `undefined` |
+| `darkTheme`               | `dark-theme`               |             | `boolean`          | `false`     |
+| `language`                | `language`                 |             | `"en" \| "sv"`     | `'sv'`      |
+| `signUrl` _(required)_    | `sign-url`                 |             | `string`           | `undefined` |
+| `type` _(required)_       | `type`                     | Props       | `"auth" \| "sign"` | `undefined` |
 
 
 ## Events

@@ -11147,14 +11147,18 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
     }
     createReturnUrl() {
         const device = useDevice();
-        const location = window.location.href.replace('#', '');
+        const { protocol, host, pathname, search } = window.location;
+        // Rebuild URL without any hash
+        const baseUrl = `${protocol}//${host}${pathname}${search}`;
+        // Device-specific deep links
         if (device.isChromeOnAppleDevice || device.isChromeOnAndroidMobile)
             return encodeURIComponent('googlechrome://');
         if (device.isFirefoxOnAppleDevice)
             return encodeURIComponent('firefox://');
         if (device.isOperaTouchOnAppleDevice)
-            return encodeURIComponent(`${location.replace('http', 'touch-http')}#initiated=true`);
-        return encodeURIComponent(`${location}#initiated=true`);
+            return encodeURIComponent(`${baseUrl.replace('http', 'touch-http')}#initiated=true`);
+        // Default return URL with clean hash
+        return encodeURIComponent(`${baseUrl}#initiated=true`);
     }
     async post(url) {
         try {

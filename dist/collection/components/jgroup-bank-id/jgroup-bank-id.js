@@ -75,9 +75,6 @@ export class JgroupBankId {
     }
     /** Lifecycle */
     componentWillLoad() {
-        // TEMPORARY - remove before publishing. Confirms the local symlinked
-        // build is what's actually loading, not the jsdelivr CDN version.
-        console.log(`${this.TAG} loaded from LOCAL build`);
         this.validateProps();
         window.history.replaceState({}, '', null);
         this.init = this.init.bind(this);

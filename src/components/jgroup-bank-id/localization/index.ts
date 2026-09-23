@@ -1,32 +1,37 @@
 import sweJson from './swe.json';
 import engJson from './eng.json';
 
-const translationSets = [sweJson, engJson];
+type Locale = 'sv' | 'en';
+// Indexing with an arbitrary key (translate() accepts fallback keys that
+// may not exist in the set) can genuinely return undefined at runtime,
+// even though Record<string, string> wouldn't type it that way.
+type TranslationSet = Record<string, string | undefined>;
 
-const getTranslationSet = (locale: 'sv' | 'en' = 'sv'): any => {
-  return (
-    translationSets.find(
-      (set) =>
-        set.htmlLang === locale ||
-        set.locale === locale ||
-        navigator.language.includes(set.htmlLang) ||
-        navigator.language.includes(set.locale),
-    ) || engJson
-  );
-};
+const translationSets: TranslationSet[] = [sweJson, engJson];
 
-export function createTranslateFunction(language: 'sv' | 'en' = 'sv') {
+// `locale` is always an explicit, caller-provided value (the component's
+// own `language` prop, typed and defaulted to 'sv') - it must win outright.
+// A prior version of this also matched against navigator.language as a
+// fallback, but since that check ran unconditionally alongside the direct
+// match rather than only when no explicit locale was available, it could
+// silently override an explicitly-requested language whenever the
+// visitor's browser locale happened to match a *different* set earlier in
+// `translationSets` (sv is checked before en) - e.g. language="en" would
+// still resolve to the Swedish set for a visitor with a Swedish browser.
+const getTranslationSet = (locale: Locale): TranslationSet =>
+  translationSets.find(
+    (set) => set.htmlLang === locale || set.locale === locale,
+  ) ?? engJson;
+
+export function createTranslateFunction(language: Locale = 'sv') {
   const translationSet = getTranslationSet(language);
 
-  return function translate(...keys: string[]) {
-    // not needed?
-    // if (!translationSet) {
-    //   return keys[0];
-    // }
-
+  return function translate(...keys: string[]): string {
     for (const key of keys) {
-      if (translationSet[key]) {
-        return translationSet[key];
+      const value = translationSet[key];
+
+      if (value !== undefined && value.length > 0) {
+        return value;
       }
     }
 

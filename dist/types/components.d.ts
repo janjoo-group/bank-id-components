@@ -7,15 +7,36 @@
 import { HTMLStencilElement, JSXBase } from "./stencil-public-runtime";
 export namespace Components {
     interface JgroupBankId {
+        /**
+          * Endpoint that starts an authentication transaction - required when type is 'auth'.
+         */
         "authUrl": string;
+        /**
+          * Auto-starts the flow immediately on mount, skipping the start button - desktop (qr flow) only.
+         */
         "autoStartSingleOption": false;
+        /**
+          * Endpoint called to cancel an in-progress transaction.
+         */
         "cancelUrl": string;
+        /**
+          * Endpoint polled for the transaction's current status.
+         */
         "collectUrl": string;
+        /**
+          * Renders the widget with its dark color scheme.
+         */
         "darkTheme": false;
+        /**
+          * UI language for all widget copy.
+         */
         "language": 'sv' | 'en';
+        /**
+          * Endpoint that starts a signing transaction - required when type is 'sign'.
+         */
         "signUrl": string;
         /**
-          * Props
+          * Whether this widget performs an authentication or a signing flow.
          */
         "type": 'auth' | 'sign';
     }
@@ -50,21 +71,48 @@ declare global {
 }
 declare namespace LocalJSX {
     interface JgroupBankId {
+        /**
+          * Endpoint that starts an authentication transaction - required when type is 'auth'.
+         */
         "authUrl": string;
+        /**
+          * Auto-starts the flow immediately on mount, skipping the start button - desktop (qr flow) only.
+         */
         "autoStartSingleOption"?: false;
+        /**
+          * Endpoint called to cancel an in-progress transaction.
+         */
         "cancelUrl": string;
+        /**
+          * Endpoint polled for the transaction's current status.
+         */
         "collectUrl": string;
+        /**
+          * Renders the widget with its dark color scheme.
+         */
         "darkTheme"?: false;
+        /**
+          * UI language for all widget copy.
+         */
         "language"?: 'sv' | 'en';
         /**
-          * Events
+          * Fired when the visitor cancels the flow, either via the cancel button or a call to cancel().
          */
         "onCancelled"?: (event: JgroupBankIdCustomEvent<any>) => void;
+        /**
+          * Fired once collect() resolves with a terminal 'complete' status - detail carries the raw collect response, success or business-logic error.
+         */
         "onCompleted"?: (event: JgroupBankIdCustomEvent<any>) => void;
+        /**
+          * Fired once the initial auth/sign request has succeeded and a transaction is under way - detail carries { flowType }, so consumers can tell the same-device app hand-off (flowType: 'app', which then shows nothing of its own until the visitor returns) apart from the qr flow's own continuously-updating UI.
+         */
         "onStarted"?: (event: JgroupBankIdCustomEvent<any>) => void;
+        /**
+          * Endpoint that starts a signing transaction - required when type is 'sign'.
+         */
         "signUrl": string;
         /**
-          * Props
+          * Whether this widget performs an authentication or a signing flow.
          */
         "type": 'auth' | 'sign';
     }

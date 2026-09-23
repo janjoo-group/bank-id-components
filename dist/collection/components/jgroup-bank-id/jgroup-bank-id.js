@@ -1,5 +1,5 @@
 import { Host, h, } from "@stencil/core";
-import { getQrCodeImageUrl, useDevice, getHashParams } from "./../../utils/utils";
+import { getQrCodeImageUrl, useDevice, getHashParams, } from "./../../utils/utils";
 import { createTranslateFunction } from "./localization";
 import { Alert, StartButton, CancelButton } from "./components";
 import axios from "axios";
@@ -34,26 +34,28 @@ export class JgroupBankId {
     /** Watchers for prop validation */
     validateType(newValue) {
         if (!['auth', 'sign'].includes(newValue)) {
-            this.throwError(`The 'type' attribute is required and must be either 'auth' or 'sign'.`);
+            this.throwError('The `type` attribute is required and must be either `auth` or `sign`.');
         }
     }
     validateSignUrl(newValue) {
         if (this.type === 'sign' && newValue === undefined) {
-            this.throwError(`The 'sign-url' attribute is required when 'type' is set to 'sign'.`);
+            this.throwError('The `sign-url` attribute is required when `type` is set to `sign`.');
         }
     }
     validateAuthUrl(newValue) {
         if (this.type === 'auth' && newValue === undefined) {
-            this.throwError(`The 'auth-url' attribute is required when 'type' is set to 'auth'.`);
+            this.throwError('The `auth-url` attribute is required when `type` is set to `auth`.');
         }
     }
     validateCollectUrl(newValue) {
-        if (!newValue)
-            this.throwError(`The 'collect-url' attribute is required.`);
+        if (newValue === undefined) {
+            this.throwError('The `collect-url` attribute is required.');
+        }
     }
     validateCancelUrl(newValue) {
-        if (!newValue)
-            this.throwError(`The 'cancel-url' attribute is required.`);
+        if (newValue === undefined) {
+            this.throwError('The `cancel-url` attribute is required.');
+        }
     }
     /** Visibility change listener */
     handleVisibilityChange() {
@@ -64,12 +66,18 @@ export class JgroupBankId {
         const userStarted = ((_a = window.history.state) === null || _a === void 0 ? void 0 : _a.triggeredByUser) === true;
         const flowInitiated = hashParams.initiated !== undefined;
         // Only resume polling if the flow was genuinely started
-        if (this.isInProgress && !this.isPolling && this.currentTransactionId && (flowInitiated || userStarted)) {
+        if (this.isInProgress &&
+            !this.isPolling &&
+            this.currentTransactionId &&
+            (flowInitiated || userStarted)) {
             this.pollCollect(this.currentTransactionId);
         }
     }
     /** Lifecycle */
     componentWillLoad() {
+        // TEMPORARY - remove before publishing. Confirms the local symlinked
+        // build is what's actually loading, not the jsdelivr CDN version.
+        console.log(`${this.TAG} loaded from LOCAL build`);
         this.validateProps();
         window.history.replaceState({}, '', null);
         this.init = this.init.bind(this);
@@ -78,7 +86,9 @@ export class JgroupBankId {
         this.reset = this.reset.bind(this);
         this.cancel = this.cancel.bind(this);
         this.setFlowTypeBasedOnDevice();
-        if (this.autoStartSingleOption && !this.isMobileOrTablet && this.flowType === 'qr') {
+        if (this.autoStartSingleOption &&
+            !this.isMobileOrTablet &&
+            this.flowType === 'qr') {
             setTimeout(() => this.init(), 0);
         }
     }
@@ -87,22 +97,36 @@ export class JgroupBankId {
         var _a;
         if (!this.propsValid)
             return h("p", null, this.propsValidationErrorMessage);
-        return (h(Host, null, this.shouldRenderStartButtons && (h("div", { class: "flex flex-col items-center" }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+        return (h(Host, null, this.shouldRenderStartButtons && (h("div", { class: 'flex flex-col items-center' }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
-                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: "mt-4" }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (h("p", { class: "text-center animate-fade" }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
+                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, alt: this.translate('qr-code-alt'), class: 'mx-auto mb-4 animate-fade' })), this.shouldRenderAppInProgressMessage && (h("p", { "data-test-id": 'app-in-progress-message', class: 'text-center animate-fade' }, this.translate('app-in-progress'))), this.shouldRenderCancelButton && (h("p", { class: 'text-center animate-fade' }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
     /** Computed */
     get shouldRenderCancelButton() {
         return this.flowType === 'qr' && (this.isInProgress || this.isCancelling);
     }
     get shouldRenderQrImage() {
-        return this.isInProgress && this.flowType === 'qr' && this.qrCodeImageUrl !== null;
+        return (this.isInProgress &&
+            this.flowType === 'qr' &&
+            this.qrCodeImageUrl !== null);
+    }
+    // The app flow never polls collect-url until the visitor returns from
+    // the native app (see handleVisibilityChange), so statusHintCode - the
+    // only other thing that renders anything for the app flow, via the
+    // Alert below - stays null the entire time the visitor is away. Without
+    // this, the widget renders nothing at all for that whole stretch.
+    get shouldRenderAppInProgressMessage() {
+        return (this.isInProgress &&
+            this.flowType === 'app' &&
+            this.statusHintCode === null);
     }
     get shouldRenderStatusHint() {
         return this.statusHintCode !== null && this.isInProgress !== null;
     }
     get shouldRenderStartButtons() {
-        return !this.isInProgress && this.status !== 'complete' && this.statusHintCode === null;
+        return (!this.isInProgress &&
+            this.status !== 'complete' &&
+            this.statusHintCode === null);
     }
     /** Actions */
     startOnAnotherDevice() {
@@ -137,15 +161,15 @@ export class JgroupBankId {
         this.isStarting = true;
         const transaction = await this.post(url);
         if (!transaction) {
-            this.reset();
-            this.throwError(`Failed starting '${this.type}' transaction`);
+            console.error(`${this.TAG} Failed starting '${this.type}' transaction`);
+            await this.reset();
             return;
         }
-        this.started.emit();
+        this.started.emit({ flowType: this.flowType });
         window.history.pushState({ triggeredByUser: true }, '', null);
         await this.handleInitComplete(transaction);
     }
-    async handleInitComplete({ autoStartToken, transactionId }) {
+    async handleInitComplete({ autoStartToken, transactionId, }) {
         this.currentTransactionId = transactionId;
         this.isInProgress = true;
         if (this.flowType === 'qr') {
@@ -290,7 +314,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": "Props"
+                    "text": "Whether this widget performs an authentication or a signing flow."
                 },
                 "attribute": "type",
                 "reflect": false
@@ -307,7 +331,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Endpoint that starts a signing transaction - required when type is 'sign'."
                 },
                 "attribute": "sign-url",
                 "reflect": false
@@ -324,7 +348,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Endpoint that starts an authentication transaction - required when type is 'auth'."
                 },
                 "attribute": "auth-url",
                 "reflect": false
@@ -341,7 +365,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Endpoint polled for the transaction's current status."
                 },
                 "attribute": "collect-url",
                 "reflect": false
@@ -358,7 +382,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Endpoint called to cancel an in-progress transaction."
                 },
                 "attribute": "cancel-url",
                 "reflect": false
@@ -375,7 +399,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Auto-starts the flow immediately on mount, skipping the start button - desktop (qr flow) only."
                 },
                 "attribute": "auto-start-single-option",
                 "reflect": false,
@@ -393,7 +417,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Renders the widget with its dark color scheme."
                 },
                 "attribute": "dark-theme",
                 "reflect": false,
@@ -411,7 +435,7 @@ export class JgroupBankId {
                 "optional": false,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "UI language for all widget copy."
                 },
                 "attribute": "language",
                 "reflect": false,
@@ -441,7 +465,7 @@ export class JgroupBankId {
                 "composed": true,
                 "docs": {
                     "tags": [],
-                    "text": "Events"
+                    "text": "Fired when the visitor cancels the flow, either via the cancel button or a call to cancel()."
                 },
                 "complexType": {
                     "original": "any",
@@ -456,7 +480,7 @@ export class JgroupBankId {
                 "composed": true,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Fired once collect() resolves with a terminal 'complete' status - detail carries the raw collect response, success or business-logic error."
                 },
                 "complexType": {
                     "original": "any",
@@ -471,7 +495,7 @@ export class JgroupBankId {
                 "composed": true,
                 "docs": {
                     "tags": [],
-                    "text": ""
+                    "text": "Fired once the initial auth/sign request has succeeded and a transaction is under way - detail carries { flowType }, so consumers can tell the same-device app hand-off (flowType: 'app', which then shows nothing of its own until the visitor returns) apart from the qr flow's own continuously-updating UI."
                 },
                 "complexType": {
                     "original": "any",

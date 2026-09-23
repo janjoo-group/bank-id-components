@@ -1,27 +1,34 @@
-export declare const StartButton: ({ onClick, isLoading, text, isOutlined, darkTheme, }: {
-    onClick: any;
-    isLoading: any;
-    text: any;
-    isOutlined: any;
-    darkTheme: any;
-}) => any;
-export declare const CancelButton: ({ onClick, text, isLoading, darkTheme }: {
-    onClick: any;
-    text: any;
-    isLoading: any;
-    darkTheme: any;
-}) => any;
-export declare const Alert: ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkTheme, }: {
-    message: any;
-    type: any;
-    onTryAgainButtonClick: any;
-    tryAgainButtonText: any;
-    darkTheme: any;
-}) => any;
-export declare const Spinner: ({ color, classes }: {
-    color: any;
-    classes: any;
-}) => any;
-export declare const BankIdLogo: ({ color }: {
-    color: any;
-}) => any;
+import { FunctionalComponent } from '../../stencil-public-runtime';
+interface StartButtonProps {
+    onClick: () => void;
+    isLoading: boolean;
+    text: string;
+    isOutlined: boolean;
+    darkTheme: boolean;
+}
+export declare const StartButton: FunctionalComponent<StartButtonProps>;
+interface CancelButtonProps {
+    onClick: () => void;
+    text: string;
+    isLoading: boolean;
+    darkTheme: boolean;
+}
+export declare const CancelButton: FunctionalComponent<CancelButtonProps>;
+interface AlertProps {
+    message: string;
+    type: 'error' | 'info';
+    onTryAgainButtonClick: () => void;
+    tryAgainButtonText: string;
+    darkTheme: boolean;
+}
+export declare const Alert: FunctionalComponent<AlertProps>;
+interface SpinnerProps {
+    color: string;
+    classes: string;
+}
+export declare const Spinner: FunctionalComponent<SpinnerProps>;
+interface BankIdLogoProps {
+    color: string;
+}
+export declare const BankIdLogo: FunctionalComponent<BankIdLogoProps>;
+export {};

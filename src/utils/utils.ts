@@ -9,7 +9,7 @@ export async function getQrCodeImageUrl(qrCode: string, options = {}) {
       errorCorrectionLevel: 'L',
       ...options,
     });
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -31,13 +31,6 @@ export const useDevice = () => {
     isChromeOnAndroidMobile,
   };
 };
-
-export function readCookie(name: string) {
-  const match = document.cookie.match(
-    new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'),
-  );
-  return match !== null ? decodeURIComponent(match[3]) : null;
-}
 
 export function getHashParams(hash: string) {
   if (hash === undefined) {

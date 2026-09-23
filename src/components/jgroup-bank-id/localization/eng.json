@@ -8,6 +8,8 @@
   "start-qr": "Mobile BankID",
   "start-app": "Open BankID",
   "start-qr-another-device": "BankID on another device",
+  "qr-code-alt": "QR code, scan it with the BankID app to identify yourself",
+  "app-in-progress": "Continue in the BankID app...",
   "hintcode-app-starting": "Trying to start the BankID app...",
   "hintcode-qr-outstandingTransaction": "Start the BankID app and scan the QR code.",
   "hintcode-qr-started": "Start the BankID app and scan the QR code.",

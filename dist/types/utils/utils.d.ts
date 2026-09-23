@@ -1,4 +1,4 @@
-export declare function getQrCodeImageUrl(qrCode: string, options?: {}): Promise<any>;
+export declare function getQrCodeImageUrl(qrCode: string, options?: {}): Promise<string>;
 export declare const useDevice: () => {
     isMobileOrTablet: boolean;
     isChromeOnAppleDevice: boolean;
@@ -6,5 +6,4 @@ export declare const useDevice: () => {
     isOperaTouchOnAppleDevice: boolean;
     isChromeOnAndroidMobile: boolean;
 };
-export declare function readCookie(name: string): string;
 export declare function getHashParams(hash: string): {};

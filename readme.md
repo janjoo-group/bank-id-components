@@ -1,75 +1,121 @@
-[![Built With Stencil](https://img.shields.io/badge/-Built%20With%20Stencil-16161d.svg?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjIuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1MTIgNTEyOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI%2BCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI%2BCgkuc3Qwe2ZpbGw6I0ZGRkZGRjt9Cjwvc3R5bGU%2BCjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00MjQuNywzNzMuOWMwLDM3LjYtNTUuMSw2OC42LTkyLjcsNjguNkgxODAuNGMtMzcuOSwwLTkyLjctMzAuNy05Mi43LTY4LjZ2LTMuNmgzMzYuOVYzNzMuOXoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTQyNC43LDI5Mi4xSDE4MC40Yy0zNy42LDAtOTIuNy0zMS05Mi43LTY4LjZ2LTMuNkgzMzJjMzcuNiwwLDkyLjcsMzEsOTIuNyw2OC42VjI5Mi4xeiIvPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNNDI0LjcsMTQxLjdIODcuN3YtMy42YzAtMzcuNiw1NC44LTY4LjYsOTIuNy02OC42SDMzMmMzNy45LDAsOTIuNywzMC43LDkyLjcsNjguNlYxNDEuN3oiLz4KPC9zdmc%2BCg%3D%3D&colorA=16161d&style=flat-square)](https://stenciljs.com)
+# bank-id-components
 
-# Stencil Component Starter
+A single Stencil web component, `<jgroup-bank-id>`, that drives a Swedish
+BankID authentication or signing flow: the QR-code same-device flow on
+desktop, and the app-switch flow on mobile. It's framework-agnostic and
+gets embedded directly as a custom element in whatever's consuming it -
+Vue/Inertia SPAs, plain Blade pages, anything that can load a `<script
+type="module">` and listen for DOM events.
 
-This is a starter project for building a standalone Web Component using Stencil.
+## The backend half
 
-Stencil is also great for building entire apps. For that, use the [stencil-app-starter](https://github.com/ionic-team/stencil-app-starter) instead.
+This component only talks to whatever three endpoints you point
+`auth-url`/`sign-url`, `collect-url` and `cancel-url` at - it has no
+opinion on the backend beyond the JSON shape those responses need. Every
+current consumer builds that backend on
+[`jgroup/laravel-bank-id`](https://github.com/janjoo-group/laravel-bank-id),
+which wraps BankID's own API behind a `BankID` facade
+(`BankID::auth()`/`collect()`/`cancel()`). Its
+`collect()` response already carries the `status`/`hintCode`/
+`transactionId`/`qrCode` fields this widget expects; a consuming app
+layers its own business-logic outcome on top via that response's
+`withData(['error' => ...])` (still `status: 'complete'`, just with an
+extra key the widget's own success/error branching neither needs nor
+looks at - only the consuming app's `completed` handler does, e.g.
+`CollectBankIdLogin.php` in `forms`).
 
-# Stencil
+## Consuming it
 
-Stencil is a compiler for building fast web apps using Web Components.
+Load the built ESM bundle directly (no npm dependency involved for
+consumers):
 
-Stencil combines the best concepts of the most popular frontend frameworks into a compile-time rather than run-time tool.  Stencil takes TypeScript, JSX, a tiny virtual DOM layer, efficient one-way data binding, an asynchronous rendering pipeline (similar to React Fiber), and lazy-loading out of the box, and generates 100% standards-based Web Components that run in any browser supporting the Custom Elements v1 spec.
+```html
+<script type="module" src="https://cdn.jsdelivr.net/gh/janjoo-group/bank-id-components@latest/dist/jgroup-bank-id-components/jgroup-bank-id-components.esm.js"></script>
 
-Stencil components are just Web Components, so they work in any major framework or with no framework at all.
-
-## Getting Started
-
-To start building a new web component using Stencil, clone this repo to a new directory:
-
-```bash
-git clone https://github.com/ionic-team/stencil-component-starter.git my-component
-cd my-component
-git remote rm origin
+<jgroup-bank-id
+  type="auth"
+  auth-url="/bankid/start"
+  collect-url="/bankid/collect"
+  cancel-url="/bankid/cancel"
+></jgroup-bank-id>
 ```
 
-and run:
+jsdelivr serves straight from this repo's `dist/` at the `@latest` tag
+(i.e. the `main` branch HEAD) - there's no separate publish/release step,
+just commit and push. jsdelivr's own CDN cache can take up to ~24h to pick
+up a new push; use `https://purge.jsdelivr.net/gh/janjoo-group/bank-id-components@latest/...`
+to force it sooner if you need a fix live immediately.
+
+Full prop/event reference (kept in sync automatically from the component's
+own doc comments on every build): [`src/components/jgroup-bank-id/readme.md`](src/components/jgroup-bank-id/readme.md).
+
+### `type="auth"` vs `type="sign"`
+
+Same component, same two device flows, different pair of endpoints:
+`auth-url`/`sign-url` starts the transaction depending on `type`.
+`collect-url` is polled for status either way.
+
+### The two device flows
+
+- **Desktop (`qr`)**: after starting, the widget polls `collect-url`
+  directly and shows a live QR code + status hint the whole time.
+- **Mobile (`app`)**: the widget redirects the same tab to
+  `https://app.bankid.com/...`, which hands off to the native BankID app.
+  It does **not** poll during this time - there's nothing to poll yet, the
+  visitor is off in a different app. When the visitor returns, a
+  `visibilitychange` listener resumes polling automatically (see
+  `handleVisibilityChange`/`pollCollect` in
+  `jgroup-bank-id.tsx`). Because nothing polls during the hand-off, the
+  widget has no live status of its own for that whole stretch - the
+  `started` event's `detail.flowType` tells a consumer when it should
+  show its own "continue in the BankID app..." indicator instead
+  (`ShowLogin.vue` in the `forms` repo does exactly this).
+
+## Development
 
 ```bash
 npm install
-npm start
+npm start          # dev server with live reload
+npm run build       # production build -> dist/
+npm test            # spec tests (npx stencil test --spec --e2e for e2e too)
+npm run lint         # eslint src
+npm run lint.fix     # eslint src --fix
 ```
 
-To build the component for production, run:
+Two tsconfigs exist on purpose: `tsconfig.json` (used by ESLint's
+type-aware parsing and your editor) includes spec/test files;
+`tsconfig.build.json` (used only by the Stencil build itself, via
+`stencil.config.ts`'s `tsconfig` option) excludes them, so compiled spec
+files and test-only helpers (`src/testing/`) never end up shipped in
+`dist/`.
 
-```bash
-npm run build
-```
+### Testing gotchas worth knowing
 
-To run the unit tests for the components, run:
+- `@stencil/core/mock-doc`'s `MockHistory.pushState()`/`replaceState()`
+  are hard no-ops - `history.state` will never actually update in a spec
+  test. Drive anything that depends on it (like the mobile flow's resume
+  check) via `location.hash` instead, which does work.
+- The real `axios` module touches `document`/`location` at import time,
+  which doesn't play well with Stencil's mock DOM. Tests get a lightweight
+  stand-in via `stencil.config.ts`'s `testing.moduleNameMapper`, mapped to
+  `src/testing/axios-mock.ts` - a plain `jest.mock('axios', ...)` inside a
+  spec file isn't reliably hoisted above the component's own import under
+  Stencil's test transform, so module-level resolution is what actually
+  works here.
+- `newSpecPage()` resets `navigator`/`location` as part of its own setup,
+  so mocking them *before* calling it doesn't stick - set them up after.
 
-```bash
-npm test
-```
+## Local development against a consuming app
 
-Need help? Check out our docs [here](https://stenciljs.com/docs/my-first-component).
-
-
-## Naming Components
-
-When creating new component tags, we recommend _not_ using `stencil` in the component name (ex: `<stencil-datepicker>`). This is because the generated component has little to nothing to do with Stencil; it's just a web component!
-
-Instead, use a prefix that fits your company or any name for a group of related components. For example, all of the Ionic generated web components use the prefix `ion`.
-
-
-## Using this component
-
-There are three strategies we recommend for using web components built with Stencil.
-
-The first step for all three of these strategies is to [publish to NPM](https://docs.npmjs.com/getting-started/publishing-npm-packages).
-
-### Script tag
-
-- Put a script tag similar to this `<script type='module' src='https://unpkg.com/my-component@0.0.1/dist/my-component.esm.js'></script>` in the head of your index.html
-- Then you can use the element anywhere in your template, JSX, html etc
-
-### Node Modules
-- Run `npm install my-component --save`
-- Put a script tag similar to this `<script type='module' src='node_modules/my-component/dist/my-component.esm.js'></script>` in the head of your index.html
-- Then you can use the element anywhere in your template, JSX, html etc
-
-### In a stencil-starter app
-- Run `npm install my-component --save`
-- Add an import to the npm packages `import my-component;`
-- Then you can use the element anywhere in your template, JSX, html etc
+Point a consumer at your local build instead of the CDN while you're
+working on both at once, so every `npm run build` here shows up there
+immediately with no publish step. In `forms`, for example: symlink
+`public/bank-id-components` to this repo's own `dist/jgroup-bank-id-components`
+(wherever you've checked out
+[`janjoo-group/bank-id-components`](https://github.com/janjoo-group/bank-id-components)
+- if `forms` runs inside a VM, that path needs to resolve from the VM's
+own filesystem, not the host's), then point
+`resources/views/templates/bank-id-components.blade.php` at
+`{{ asset('bank-id-components/jgroup-bank-id-components.esm.js') }}`
+instead of the CDN URL. Remember to revert that template change before
+merging - it's meant to be temporary.

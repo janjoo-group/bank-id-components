@@ -8,6 +8,8 @@
   "start-qr": "Mobilt BankID",
   "start-app": "Öppna BankID",
   "start-qr-another-device": "BankID på annan enhet",
+  "qr-code-alt": "QR-kod, skanna med BankID-appen för att identifiera dig",
+  "app-in-progress": "Fortsätt i BankID-appen...",
   "hintcode-app-starting": "Försöker starta BankID-appen...",
   "hintcode-qr-outstandingTransaction": "Starta BankID-appen och tryck på QR-ikonen. Skanna sedan QR-koden nedan.",
   "hintcode-qr-started": "Starta BankID-appen och tryck på QR-ikonen. Skanna sedan QR-koden nedan.",

@@ -4,7 +4,7 @@ export async function getQrCodeImageUrl(qrCode, options = {}) {
     try {
         return await QRLib.toDataURL(qrCode, Object.assign({ width: 200, margin: 2, errorCorrectionLevel: 'L' }, options));
     }
-    catch (error) {
+    catch (_a) {
         return null;
     }
 }
@@ -22,10 +22,6 @@ export const useDevice = () => {
         isChromeOnAndroidMobile,
     };
 };
-export function readCookie(name) {
-    const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-    return match !== null ? decodeURIComponent(match[3]) : null;
-}
 export function getHashParams(hash) {
     if (hash === undefined) {
         return {};

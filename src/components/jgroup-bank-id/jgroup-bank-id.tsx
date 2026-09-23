@@ -126,7 +126,7 @@ export class JgroupBankId {
 
     return (
       <Host>
-        {this.isInProgress === false && (
+        {this.shouldRenderStartButtons && (
           <div class="flex flex-col items-center">
             <StartButton
               isOutlined={false}
@@ -193,6 +193,10 @@ export class JgroupBankId {
 
   private get shouldRenderStatusHint() {
     return this.statusHintCode !== null && this.isInProgress !== null;
+  }
+
+  private get shouldRenderStartButtons() {
+    return !this.isInProgress && this.status !== 'complete' && this.statusHintCode === null;
   }
 
   /** Actions */
@@ -266,7 +270,7 @@ export class JgroupBankId {
       if (!response) {
         console.warn(`${this.TAG} pollCollect returned null`);
         this.isPolling = false;
-        if (this.flowType === 'app') await this.reset();
+        await this.reset();
         break;
       }
 
@@ -292,11 +296,14 @@ export class JgroupBankId {
         case 'failed':
           this.isPolling = false;
           this.isInProgress = false;
+          this.isStarting = false;
           break;
 
         case 'complete':
           this.isPolling = false;
           this.isInProgress = false;
+          this.isStarting = false;
+          this.status = null;
           this.statusHintCode = null;
           window.location.hash = '';
           this.completed.emit(response);

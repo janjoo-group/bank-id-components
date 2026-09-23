@@ -47,6 +47,7 @@ export declare class JgroupBankId {
     private get shouldRenderCancelButton();
     private get shouldRenderQrImage();
     private get shouldRenderStatusHint();
+    private get shouldRenderStartButtons();
     /** Actions */
     private startOnAnotherDevice;
     private setFlowTypeBasedOnDevice;

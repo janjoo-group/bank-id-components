@@ -11002,7 +11002,7 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
         var _a;
         if (!this.propsValid)
             return h("p", null, this.propsValidationErrorMessage);
-        return (h(Host, null, this.isInProgress === false && (h("div", { class: "flex flex-col items-center" }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+        return (h(Host, null, this.shouldRenderStartButtons && (h("div", { class: "flex flex-col items-center" }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
                 : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: "mt-4" }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, class: "mx-auto mb-4 animate-fade" })), this.shouldRenderCancelButton && (h("p", { class: "text-center animate-fade" }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
@@ -11015,6 +11015,9 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
     }
     get shouldRenderStatusHint() {
         return this.statusHintCode !== null && this.isInProgress !== null;
+    }
+    get shouldRenderStartButtons() {
+        return !this.isInProgress && this.status !== 'complete' && this.statusHintCode === null;
     }
     /** Actions */
     startOnAnotherDevice() {
@@ -11078,8 +11081,7 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
             if (!response) {
                 console.warn(`${this.TAG} pollCollect returned null`);
                 this.isPolling = false;
-                if (this.flowType === 'app')
-                    await this.reset();
+                await this.reset();
                 break;
             }
             if (transactionId && response.transactionId !== transactionId) {
@@ -11100,10 +11102,13 @@ const JgroupBankId$1 = /*@__PURE__*/ proxyCustomElement(class JgroupBankId exten
                 case 'failed':
                     this.isPolling = false;
                     this.isInProgress = false;
+                    this.isStarting = false;
                     break;
                 case 'complete':
                     this.isPolling = false;
                     this.isInProgress = false;
+                    this.isStarting = false;
+                    this.status = null;
                     this.statusHintCode = null;
                     window.location.hash = '';
                     this.completed.emit(response);

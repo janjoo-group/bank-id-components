@@ -21,8 +21,7 @@ which wraps BankID's own API behind a `BankID` facade
 layers its own business-logic outcome on top via that response's
 `withData(['error' => ...])` (still `status: 'complete'`, just with an
 extra key the widget's own success/error branching neither needs nor
-looks at - only the consuming app's `completed` handler does, e.g.
-`CollectBankIdLogin.php` in `forms`).
+looks at - only the consuming app's own `completed` handler does).
 
 ## Consuming it
 
@@ -68,8 +67,7 @@ Same component, same two device flows, different pair of endpoints:
   `jgroup-bank-id.tsx`). Because nothing polls during the hand-off, the
   widget has no live status of its own for that whole stretch - the
   `started` event's `detail.flowType` tells a consumer when it should
-  show its own "continue in the BankID app..." indicator instead
-  (`ShowLogin.vue` in the `forms` repo does exactly this).
+  show its own "continue in the BankID app..." indicator instead.
 
 ## Development
 
@@ -109,13 +107,11 @@ files and test-only helpers (`src/testing/`) never end up shipped in
 
 Point a consumer at your local build instead of the CDN while you're
 working on both at once, so every `npm run build` here shows up there
-immediately with no publish step. In `forms`, for example: symlink
-`public/bank-id-components` to this repo's own `dist/jgroup-bank-id-components`
+immediately with no publish step: symlink a static asset path in the
+consuming app to this repo's own `dist/jgroup-bank-id-components`
 (wherever you've checked out
 [`janjoo-group/bank-id-components`](https://github.com/janjoo-group/bank-id-components)
-- if `forms` runs inside a VM, that path needs to resolve from the VM's
-own filesystem, not the host's), then point
-`resources/views/templates/bank-id-components.blade.php` at
-`{{ asset('bank-id-components/jgroup-bank-id-components.esm.js') }}`
-instead of the CDN URL. Remember to revert that template change before
-merging - it's meant to be temporary.
+- if the consuming app runs inside a VM, that path needs to resolve from
+the VM's own filesystem, not the host's), then point wherever it loads
+the CDN `<script>` tag at that local symlinked path instead. Remember to
+revert that swap before merging - it's meant to be temporary.

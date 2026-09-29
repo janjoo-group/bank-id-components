@@ -7608,7 +7608,7 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, }) => {
         light: 'bg-primary-900 hover:bg-primary-800 active:bg-primary-700 focus-visible:outline-primary-900 text-white',
         dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
     };
-    return (index.h("button", { type: 'button', disabled: isLoading, onClick: onClick, "data-test-id": 'start-button', "data-test-loading": isLoading, class: {
+    return (index.h("button", { type: 'button', disabled: isLoading, onClick: onClick, "aria-label": text, "data-test-id": 'start-button', "data-test-loading": isLoading, class: {
             [classes.default]: true,
             [classes.outlinedLight]: isOutlined && !darkTheme,
             [classes.outlinedDark]: isOutlined && darkTheme,
@@ -7624,7 +7624,7 @@ const CancelButton = ({ onClick, text, isLoading, darkTheme, }) => {
         light: 'bg-white border border-gray-300 active:border-gray-400 text-primary-900 active:text-primary-700 ring-gray-300 hover:bg-gray-50 focus-visible:outline-primary-700 outline-offset-2',
         dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
     };
-    return (index.h("button", { type: 'button', onClick: onClick, disabled: isLoading, "data-test-id": 'cancel-button', class: {
+    return (index.h("button", { type: 'button', onClick: onClick, disabled: isLoading, "aria-label": text, "data-test-id": 'cancel-button', class: {
             [classes.default]: true,
             [classes.light]: !darkTheme,
             [classes.dark]: darkTheme,
@@ -7644,7 +7644,14 @@ const Alert = ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkT
         dark: 'bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-600 text-white',
         light: 'bg-red-50 text-red-800 hover:bg-red-100',
     };
-    return (index.h("div", { "data-test-id": 'alert', "data-test-type": type, class: {
+    return (index.h("div", { "data-test-id": 'alert', "data-test-type": type, 
+        // This message appears/changes as the BankID flow progresses
+        // (a hint code updating, a failure occurring) without any focus
+        // move - role='alert' (assertive, interrupting) for a real error,
+        // the softer aria-live='polite' for a routine info-type status,
+        // so a screen reader user hears either without needing to
+        // rediscover this element themselves.
+        role: type === 'error' ? 'alert' : undefined, "aria-live": type === 'error' ? 'assertive' : 'polite', class: {
             'border-l-4 p-4 mb-4 animate-fade': true,
             [alertClasses[type]]: true,
             [darkTheme ? alertClasses.dark : alertClasses.light]: true,
@@ -7663,10 +7670,10 @@ const Alert = ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkT
                                 [tryAgainButtonClasses.dark]: darkTheme,
                             } }, tryAgainButtonText)))) : ('')))));
 };
-const Spinner = ({ color, classes, }) => (index.h("svg", { width: '32px', height: '32px', class: classes, fill: color, viewBox: '0 0 24 24', xmlns: 'http://www.w3.org/2000/svg' },
+const Spinner = ({ color, classes, }) => (index.h("svg", { width: '32px', height: '32px', class: classes, fill: color, viewBox: '0 0 24 24', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
     index.h("path", { d: 'M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity: '.25' }),
     index.h("path", { d: 'M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z', class: 'spinner' })));
-const BankIdLogo = ({ color }) => (index.h("svg", { width: '32px', height: '32px', viewBox: '0 0 39 39', xmlns: 'http://www.w3.org/2000/svg' },
+const BankIdLogo = ({ color }) => (index.h("svg", { width: '32px', height: '32px', viewBox: '0 0 39 39', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
     index.h("g", { stroke: 'none', "stroke-width": '1', fill: 'none', "fill-rule": 'evenodd' },
         index.h("rect", { fill: 'none', x: '0', y: '0', width: '39', height: '39' }),
         index.h("g", { transform: 'translate(5, 5)', fill: color },
@@ -13626,11 +13633,12 @@ const JgroupBankId = class {
     /** UI Rendering */
     render() {
         var _a;
-        if (!this.propsValid)
-            return index.h("p", null, this.propsValidationErrorMessage);
+        if (!this.propsValid) {
+            return (index.h("p", { role: 'alert' }, this.propsValidationErrorMessage));
+        }
         return (index.h(index.Host, null, this.shouldRenderStartButtons && (index.h("div", { class: 'flex flex-col items-center' }, index.h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
-                : this.translate('start-app') }), this.isMobileOrTablet && (index.h("div", { class: 'mt-4' }, index.h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (index.h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (index.h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, alt: this.translate('qr-code-alt'), class: 'mx-auto mb-4 animate-fade' })), this.shouldRenderAppInProgressMessage && (index.h("p", { "data-test-id": 'app-in-progress-message', class: 'text-center animate-fade' }, this.translate('app-in-progress'))), this.shouldRenderCancelButton && (index.h("p", { class: 'text-center animate-fade' }, index.h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
+                : this.translate('start-app') }), this.isMobileOrTablet && (index.h("div", { class: 'mt-4' }, index.h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (index.h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (index.h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, alt: this.translate('qr-code-alt'), class: 'mx-auto mb-4 animate-fade' })), this.shouldRenderAppInProgressMessage && (index.h("p", { "data-test-id": 'app-in-progress-message', "aria-live": 'polite', class: 'text-center animate-fade' }, this.translate('app-in-progress'))), this.shouldRenderCancelButton && (index.h("p", { class: 'text-center animate-fade' }, index.h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
     /** Computed */
     get shouldRenderCancelButton() {

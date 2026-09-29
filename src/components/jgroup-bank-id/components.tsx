@@ -38,6 +38,13 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
       type='button'
       disabled={isLoading}
       onClick={onClick}
+      // The loading state swaps `text` out for a purely visual Spinner -
+      // without this, the button has no accessible name at all while
+      // disabled/loading (axe's button-name rule, confirmed via
+      // forms' own Dusk a11y suite). Always set, not just while loading,
+      // so there's one consistent accessible name rather than one that
+      // changes with state.
+      aria-label={text}
       data-test-id='start-button'
       data-test-loading={isLoading}
       class={{
@@ -89,6 +96,10 @@ export const CancelButton: FunctionalComponent<CancelButtonProps> = ({
       type='button'
       onClick={onClick}
       disabled={isLoading}
+      // Same gap as StartButton's own aria-label above - the loading
+      // state swaps `text` out for a purely visual Spinner, leaving the
+      // button with no accessible name at all otherwise.
+      aria-label={text}
       data-test-id='cancel-button'
       class={{
         [classes.default]: true,
@@ -144,6 +155,14 @@ export const Alert: FunctionalComponent<AlertProps> = ({
     <div
       data-test-id='alert'
       data-test-type={type}
+      // This message appears/changes as the BankID flow progresses
+      // (a hint code updating, a failure occurring) without any focus
+      // move - role='alert' (assertive, interrupting) for a real error,
+      // the softer aria-live='polite' for a routine info-type status,
+      // so a screen reader user hears either without needing to
+      // rediscover this element themselves.
+      role={type === 'error' ? 'alert' : undefined}
+      aria-live={type === 'error' ? 'assertive' : 'polite'}
       class={{
         'border-l-4 p-4 mb-4 animate-fade': true,
         [alertClasses[type]]: true,
@@ -224,6 +243,7 @@ export const Spinner: FunctionalComponent<SpinnerProps> = ({
     fill={color}
     viewBox='0 0 24 24'
     xmlns='http://www.w3.org/2000/svg'
+    aria-hidden='true'
   >
     <path
       d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z'
@@ -246,6 +266,7 @@ export const BankIdLogo: FunctionalComponent<BankIdLogoProps> = ({ color }) => (
     height='32px'
     viewBox='0 0 39 39'
     xmlns='http://www.w3.org/2000/svg'
+    aria-hidden='true'
   >
     <g
       stroke='none'

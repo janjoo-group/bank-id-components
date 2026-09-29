@@ -156,7 +156,11 @@ export class JgroupBankId {
 
   /** UI Rendering */
   render() {
-    if (!this.propsValid) return <p>{this.propsValidationErrorMessage}</p>;
+    if (!this.propsValid) {
+      return (
+        <p role='alert'>{this.propsValidationErrorMessage}</p>
+      );
+    }
 
     return (
       <Host>
@@ -211,6 +215,7 @@ export class JgroupBankId {
         {this.shouldRenderAppInProgressMessage && (
           <p
             data-test-id='app-in-progress-message'
+            aria-live='polite'
             class='text-center animate-fade'
           >
             {this.translate('app-in-progress')}

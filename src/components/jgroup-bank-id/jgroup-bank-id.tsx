@@ -167,7 +167,12 @@ export class JgroupBankId {
     return (
       <Host>
         {this.shouldRenderStartButtons && (
-          <div class='flex flex-col items-center'>
+          // A grid, not flex - a grid's single implicit column auto-sizes
+          // to its widest row (justify-items defaults to stretch), so both
+          // buttons match the wider one's own natural content width
+          // exactly, whichever that is - robust across languages/
+          // translations rather than a number tuned for one piece of text.
+          <div class='grid justify-center'>
             <StartButton
               isOutlined={false}
               darkTheme={this.darkTheme}

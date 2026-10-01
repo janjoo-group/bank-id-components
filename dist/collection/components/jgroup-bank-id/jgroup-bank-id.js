@@ -97,7 +97,13 @@ export class JgroupBankId {
         if (!this.propsValid) {
             return (h("p", { role: 'alert' }, this.propsValidationErrorMessage));
         }
-        return (h(Host, null, this.shouldRenderStartButtons && (h("div", { class: 'flex flex-col items-center' }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+        return (h(Host, null, this.shouldRenderStartButtons && (
+        // A grid, not flex - a grid's single implicit column auto-sizes
+        // to its widest row (justify-items defaults to stretch), so both
+        // buttons match the wider one's own natural content width
+        // exactly, whichever that is - robust across languages/
+        // translations rather than a number tuned for one piece of text.
+        h("div", { class: 'grid justify-center' }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
                 : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("div", { class: {
                 'w-fit mx-auto mb-4 p-3 rounded-xl animate-fade': true,

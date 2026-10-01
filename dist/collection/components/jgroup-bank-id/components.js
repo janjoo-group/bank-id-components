@@ -34,8 +34,15 @@ export const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, }
         // on every side, but visibly lopsided otherwise, which is what was
         // actually happening.
         withIcon: 'min-w-[12rem] pl-2 pr-5 py-2',
-        textOnly: 'justify-center min-w-[13rem] px-7 py-3.5',
-        outlinedLight: 'bg-transparent hover:bg-gray-50 active:bg-gray-200 active:border-primary-700 active:text-primary-700 focus-visible:outline-primary-900 text-primary-900 border border-primary-900',
+        // Same min-width as withIcon, and py-4 lands at the same ~52px total
+        // height (py-2 + the 36px avatar there vs py-4 + text-sm's own 20px
+        // line-height here) - same button, just without the avatar.
+        textOnly: 'justify-center min-w-[12rem] px-5 py-4',
+        // Matches the "light" variant below exactly (white bg, grey border,
+        // same hover/active, same themeable accent text) - this is the same
+        // button language, just without the avatar badge, not a different
+        // style.
+        outlinedLight: 'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
         outlinedDark: 'bg-transparent focus-visible:bg-neutral-600 focus-visible:outline-neutral-500 hover:bg-neutral-700 active:border-neutral-400 active:bg-neutral-600 text-gray-200 border border-neutral-700',
         // Themeable via the --jgroup-bankid-accent custom property, set by a
         // consuming app on the element itself or an ancestor (crosses the
@@ -49,15 +56,21 @@ export const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, }
         light: 'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
         dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
     };
-    return (h("button", { type: 'button', disabled: isLoading, onClick: onClick, "aria-label": text, "data-test-id": 'start-button', "data-test-loading": isLoading, class: {
-            [classes.default]: true,
-            [classes.withIcon]: !isOutlined,
-            [classes.textOnly]: isOutlined,
-            [classes.outlinedLight]: isOutlined && !darkTheme,
-            [classes.outlinedDark]: isOutlined && darkTheme,
-            [classes.light]: !isOutlined && !darkTheme,
-            [classes.dark]: !isOutlined && darkTheme,
-        } }, !isOutlined ? (h("span", { class: 'flex-shrink-0 h-9 w-9 rounded-full bg-white border border-black/10 shadow flex items-center justify-center' }, h(BankIdLogo, { color: primaryColor, size: 26 }))) : (''), !isLoading ? (h("span", { class: 'flex-grow text-center' }, text)) : (h("span", { class: 'flex-grow flex items-center justify-center' }, h(Spinner
+    return (h("button", { type: 'button', disabled: isLoading, onClick: onClick, "aria-label": text, "data-test-id": 'start-button', "data-test-loading": isLoading,
+        // A plain template string, not the {[classString]: condition} map
+        // form - outlinedLight and light are now the same string (same
+        // button language, badge or no badge), and that map form keys on
+        // the class STRING itself, so two different conditions landing on
+        // one identical string silently collide (the later object key wins,
+        // dropping the earlier condition's class entirely - confirmed: this
+        // is exactly how the outlined button lost its border).
+        class: `${classes.default} ${isOutlined ? classes.textOnly : classes.withIcon} ${isOutlined
+            ? darkTheme
+                ? classes.outlinedDark
+                : classes.outlinedLight
+            : darkTheme
+                ? classes.dark
+                : classes.light}` }, !isOutlined ? (h("span", { class: 'flex-shrink-0 h-9 w-9 rounded-full bg-white border border-black/10 shadow flex items-center justify-center' }, h(BankIdLogo, { color: primaryColor, size: 26 }))) : (''), !isLoading ? (h("span", { class: 'flex-grow text-center' }, text)) : (h("span", { class: 'flex-grow flex items-center justify-center' }, h(Spinner
     // Measured identical to the avatar's own 36px (h-9 w-9)
     // footprint, but still read visually heavier/bigger than it -
     // a thick solid ring with no surrounding circle just has more

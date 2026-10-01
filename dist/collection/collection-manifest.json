@@ -1,6 +1,7 @@
 {
   "entries": [
-    "components/jgroup-bank-id/jgroup-bank-id.js"
+    "components/jgroup-bank-id/jgroup-bank-id.js",
+    "components/jgroup-bank-id-button/jgroup-bank-id-button.js"
   ],
   "compiler": {
     "name": "@stencil/core",

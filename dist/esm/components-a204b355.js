@@ -4628,7 +4628,7 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, }) => {
         // primary button sits directly in a grid cell (stretches on its own),
         // but the secondary one sits inside its own wrapper div one level in,
         // which needs the button itself told to fill it explicitly.
-        default: 'relative w-full inline-flex items-center rounded-full text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+        default: 'relative w-full inline-flex items-center gap-x-3 rounded-full text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
         // A modest min-width (not the old fixed-wide one) keeps the button from
         // visibly shrinking when its text is swapped for the loading spinner,
         // without leaving a slab of dead space next to short text. The avatar
@@ -4788,4 +4788,4 @@ const BankIdLogo = ({ color, size = 32 }) => (h("svg", { width: `${size}px`, hei
 
 export { Alert as A, CancelButton as C, StartButton as S, registerInterFont as r };
 
-//# sourceMappingURL=components-e6de93d9.js.map
+//# sourceMappingURL=components-a204b355.js.map

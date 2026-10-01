@@ -24,6 +24,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+      # puppeteer (used by the e2e suite) downloads its own Chromium binary
+      # (~200MB+) as part of `npm ci`, into ~/.cache/puppeteer by default
+      # since v19+ - separate from npm's own package cache above, and the
+      # single biggest chunk of install time on a cold runner. This fires
+      # on every push to main, so without caching it that download repeats
+      # every single time, not just once.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: puppeteer-${{ runner.os }}-
 
       - run: npm ci
 

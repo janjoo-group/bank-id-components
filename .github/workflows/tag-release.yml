@@ -51,6 +51,16 @@ jobs:
           latest=$(git tag -l 'v1.0.*' | sed 's/^v1\.0\.//' | sort -n | tail -1)
           latest=${latest:-0}
           new_tag="v1.0.$((latest + 1))"
+          echo "new_tag=$new_tag" >> "$GITHUB_ENV"
           echo "Tagging $new_tag at $(git rev-parse HEAD)"
           git tag "$new_tag"
           git push origin "$new_tag"
+
+      # jsdelivr itself only needs the git tag pushed above - a GitHub
+      # Release is a separate, optional layer on top (release notes, a
+      # "latest" marker in the GitHub UI). Not functionally required, but
+      # most past tags here do have one, so this keeps matching that.
+      - name: Create a GitHub Release for it
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$new_tag" --generate-notes

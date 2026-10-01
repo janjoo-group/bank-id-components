@@ -40,6 +40,15 @@ export const config: Config = {
   ],
   testing: {
     browserHeadless: 'new',
+    // GitHub Actions' default runner has no usable Chromium sandbox (no
+    // user-namespace permissions) - Puppeteer's e2e browser just refuses
+    // to launch at all without this. Scoped to CI only: --no-sandbox is a
+    // real (if commonly accepted for this exact case - the browser never
+    // renders untrusted content, only this repo's own test fixtures)
+    // security tradeoff, so local runs keep the full sandbox by default.
+    browserArgs: process.env.CI
+      ? ['--no-sandbox', '--disable-setuid-sandbox']
+      : [],
     // components.tsx imports the tailwind config via a `.js`-suffixed
     // relative path that Stencil's own build resolves to the real
     // tailwind.config.ts, but Jest's default resolver doesn't do that

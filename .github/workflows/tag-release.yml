@@ -1,0 +1,43 @@
+name: Tag release
+
+# jsdelivr serves this package straight from this repo's dist/ at a pinned
+# tag (no npm publish step - see the readme's own "Pinned to an exact tag"
+# comment, also duplicated in every consuming app's own bank-id-components
+# blade/script-loading file). Every push to main is a new thing a consumer
+# could pin to, so every push to main gets the next v1.0.x tag automatically
+# - this used to be a manual step after every push.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      # Same `npm test` a dev runs locally (stencil test --spec --e2e) -
+      # a broken build never gets tagged, so a consuming app pinning to
+      # whatever tag is newest can't pin to something broken.
+      - run: npm test
+
+      - name: Compute and push the next v1.0.x tag
+        run: |
+          git fetch --tags --force
+          latest=$(git tag -l 'v1.0.*' | sed 's/^v1\.0\.//' | sort -n | tail -1)
+          latest=${latest:-0}
+          new_tag="v1.0.$((latest + 1))"
+          echo "Tagging $new_tag at $(git rev-parse HEAD)"
+          git tag "$new_tag"
+          git push origin "$new_tag"

@@ -1,5 +1,6 @@
 import { Host, h, } from "@stencil/core";
 import { getQrCodeImageUrl, useDevice, getHashParams, } from "./../../utils/utils";
+import { registerInterFont } from "./../../utils/interFont";
 import { createTranslateFunction } from "./localization";
 import { Alert, StartButton, CancelButton } from "./components";
 import axios from "axios";
@@ -75,6 +76,7 @@ export class JgroupBankId {
     }
     /** Lifecycle */
     componentWillLoad() {
+        registerInterFont();
         this.validateProps();
         window.history.replaceState({}, '', null);
         this.init = this.init.bind(this);
@@ -97,7 +99,11 @@ export class JgroupBankId {
         }
         return (h(Host, null, this.shouldRenderStartButtons && (h("div", { class: 'flex flex-col items-center' }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
-                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, alt: this.translate('qr-code-alt'), class: 'mx-auto mb-4 animate-fade' })), this.shouldRenderAppInProgressMessage && (h("p", { "data-test-id": 'app-in-progress-message', "aria-live": 'polite', class: 'text-center animate-fade' }, this.translate('app-in-progress'))), this.shouldRenderCancelButton && (h("p", { class: 'text-center animate-fade' }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
+                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("div", { class: {
+                'w-fit mx-auto mb-4 p-3 rounded-xl animate-fade': true,
+                'bg-white border border-gray-200': !this.darkTheme,
+                'bg-neutral-800 border border-neutral-700': this.darkTheme,
+            } }, h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, alt: this.translate('qr-code-alt'), class: 'block rounded-lg' }))), this.shouldRenderAppInProgressMessage && (h("p", { "data-test-id": 'app-in-progress-message', "aria-live": 'polite', class: 'text-center animate-fade' }, this.translate('app-in-progress'))), this.shouldRenderCancelButton && (h("p", { class: 'text-center animate-fade' }, h(CancelButton, { onClick: this.cancel, text: this.translate('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
     }
     /** Computed */
     get shouldRenderCancelButton() {
@@ -239,7 +245,6 @@ export class JgroupBankId {
             this.isCancelling = false;
             await this.reset(true); // skip the cancel request inside reset
         }
-        this.cancelled.emit();
     }
     async reset(skipCancel = false) {
         if (this.isInProgress && !skipCancel) {
@@ -256,6 +261,17 @@ export class JgroupBankId {
         this.qrCodeImageUrl = null;
         this.setFlowTypeBasedOnDevice();
         this.isPolling = false;
+        // Every caller of reset() - the explicit cancel button, the Alert's
+        // own "try again" after a failure, a dropped/mismatched poll response
+        // - represents the same observable transition back to idle. Emitting
+        // it here once, rather than only from cancel() as before, means a
+        // consuming app's own "is a BankID attempt in progress" state (e.g.
+        // hiding an alternate login form while this widget is active) gets a
+        // signal to reset too, regardless of which path got the widget back
+        // to idle. Previously only the explicit cancel button fired this -
+        // "try again" silently reset the widget's own state with no signal at
+        // all, leaving a consuming app's "ongoing" flag stuck true forever.
+        this.cancelled.emit();
     }
     createReturnUrl() {
         const device = useDevice();
@@ -463,7 +479,7 @@ export class JgroupBankId {
                 "composed": true,
                 "docs": {
                     "tags": [],
-                    "text": "Fired when the visitor cancels the flow, either via the cancel button or a call to cancel()."
+                    "text": "Fired whenever the widget returns to its idle state - the cancel button, \"try again\" after a failure, or an unexpected drop mid-flow. Use it to reset any \"a BankID attempt is in progress\" state a consuming app keeps of its own."
                 },
                 "complexType": {
                     "original": "any",

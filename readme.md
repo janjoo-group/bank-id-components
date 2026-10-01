@@ -73,12 +73,26 @@ Same component, same two device flows, different pair of endpoints:
 
 ```bash
 npm install
-npm start          # dev server with live reload
+npm start          # dev server with live reload + a mock backend, see below
 npm run build       # production build -> dist/
 npm test            # spec tests (npx stencil test --spec --e2e for e2e too)
 npm run lint         # eslint src
 npm run lint.fix     # eslint src --fix
 ```
+
+### Dev harness
+
+`npm start` (`scripts/dev.mjs`) runs the real Stencil dev server alongside a
+small zero-dependency mock of the auth-url/collect-url/cancel-url backend
+(see "The backend half" above), so the whole widget flow - every pending
+hint code, every failure, completion - can be exercised without a real
+`jgroup/laravel-bank-id` backend running anywhere. `src/index.html`'s own
+control panel drives it: prop toggles (type/language/darkTheme/
+autoStartSingleOption) remount the widget, and the state buttons change
+what the mock's `/collect` endpoint returns on its next poll (picked up
+within ~1s, same as the widget's own real poll interval). Nothing from
+`scripts/dev.mjs` or the control panel ships in `dist/` - it only runs via
+`npm start`.
 
 Two tsconfigs exist on purpose: `tsconfig.json` (used by ESLint's
 type-aware parsing and your editor) includes spec/test files;

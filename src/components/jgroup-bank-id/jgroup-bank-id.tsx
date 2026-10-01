@@ -14,6 +14,7 @@ import {
   useDevice,
   getHashParams,
 } from './../../utils/utils';
+import { registerInterFont } from './../../utils/interFont';
 import { createTranslateFunction } from './localization';
 import { Alert, StartButton, CancelButton } from './components';
 import axios from 'axios';
@@ -26,7 +27,7 @@ import axios from 'axios';
 })
 export class JgroupBankId {
   /** Events */
-  /** Fired when the visitor cancels the flow, either via the cancel button or a call to cancel(). */
+  /** Fired whenever the widget returns to its idle state - the cancel button, "try again" after a failure, or an unexpected drop mid-flow. Use it to reset any "a BankID attempt is in progress" state a consuming app keeps of its own. */
   @Event() cancelled!: EventEmitter;
   /** Fired once collect() resolves with a terminal 'complete' status - detail carries the raw collect response, success or business-logic error. */
   @Event() completed!: EventEmitter;
@@ -135,6 +136,7 @@ export class JgroupBankId {
 
   /** Lifecycle */
   componentWillLoad() {
+    registerInterFont();
     this.validateProps();
     window.history.replaceState({}, '', null);
 
@@ -205,11 +207,19 @@ export class JgroupBankId {
         )}
 
         {this.shouldRenderQrImage && (
-          <img
-            src={this.qrCodeImageUrl ?? undefined}
-            alt={this.translate('qr-code-alt')}
-            class='mx-auto mb-4 animate-fade'
-          />
+          <div
+            class={{
+              'w-fit mx-auto mb-4 p-3 rounded-xl animate-fade': true,
+              'bg-white border border-gray-200': !this.darkTheme,
+              'bg-neutral-800 border border-neutral-700': this.darkTheme,
+            }}
+          >
+            <img
+              src={this.qrCodeImageUrl ?? undefined}
+              alt={this.translate('qr-code-alt')}
+              class='block rounded-lg'
+            />
+          </div>
         )}
 
         {this.shouldRenderAppInProgressMessage && (
@@ -412,8 +422,6 @@ export class JgroupBankId {
       this.isCancelling = false;
       await this.reset(true); // skip the cancel request inside reset
     }
-
-    this.cancelled.emit();
   }
 
   private async reset(skipCancel = false) {
@@ -432,6 +440,18 @@ export class JgroupBankId {
     this.qrCodeImageUrl = null;
     this.setFlowTypeBasedOnDevice();
     this.isPolling = false;
+
+    // Every caller of reset() - the explicit cancel button, the Alert's
+    // own "try again" after a failure, a dropped/mismatched poll response
+    // - represents the same observable transition back to idle. Emitting
+    // it here once, rather than only from cancel() as before, means a
+    // consuming app's own "is a BankID attempt in progress" state (e.g.
+    // hiding an alternate login form while this widget is active) gets a
+    // signal to reset too, regardless of which path got the widget back
+    // to idle. Previously only the explicit cancel button fired this -
+    // "try again" silently reset the widget's own state with no signal at
+    // all, leaving a consuming app's "ongoing" flag stuck true forever.
+    this.cancelled.emit();
   }
 
   private createReturnUrl() {

@@ -96,7 +96,7 @@ declare namespace LocalJSX {
          */
         "language"?: 'sv' | 'en';
         /**
-          * Fired when the visitor cancels the flow, either via the cancel button or a call to cancel().
+          * Fired whenever the widget returns to its idle state - the cancel button, "try again" after a failure, or an unexpected drop mid-flow. Use it to reset any "a BankID attempt is in progress" state a consuming app keeps of its own.
          */
         "onCancelled"?: (event: JgroupBankIdCustomEvent<any>) => void;
         /**

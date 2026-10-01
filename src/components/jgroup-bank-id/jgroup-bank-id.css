@@ -1,5 +1,14 @@
 :host {
   display: block;
+  /* 'Inter' is registered at runtime via registerInterFont() (see
+     utils/interFont.ts) and document.fonts.add() - a plain @font-face rule
+     here does NOT work, confirmed: Chromium does not apply a shadow-root-
+     scoped @font-face to that same shadow tree's own text. font-family is
+     an inherited CSS property though, so once registered document-wide,
+     this still correctly picks it up for everything inside this host. */
+  font-family:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
 }
 
 .animate-fade {

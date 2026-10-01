@@ -1,4 +1,4 @@
-import { h, Fragment, FunctionalComponent } from '@stencil/core';
+import { h, FunctionalComponent } from '@stencil/core';
 import resolveConfig from 'tailwindcss/resolveConfig';
 import tailwindConfig from './../../../tailwind.config.js';
 
@@ -23,14 +23,51 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
   darkTheme,
 }) => {
   const classes = {
+    // No disabled:opacity-50 here deliberately - this button is only ever
+    // disabled while isLoading (there's no other disabled state), so the
+    // spinner itself is already the loading signal; fading the whole
+    // button desaturated the white avatar along with it, muddying the
+    // logo right when it should read as "working", not "broken".
+    // tracking-tight was tuned back when -apple-system was silently
+    // falling back to Arial - Inter (now actually loading, see
+    // registerInterFont()) already sits tighter by default, so that extra
+    // negative tracking was stacking on top of it. Default tracking.
     default:
-      'inline-flex items-center justify-center tracking-wider gap-x-4 w-56 h-12 rounded-md px-3.5 py-2.5 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
+      'relative inline-flex items-center rounded-full text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+    // A modest min-width (not the old fixed-wide one) keeps the button from
+    // visibly shrinking when its text is swapped for the loading spinner,
+    // without leaving a slab of dead space next to short text. The avatar
+    // sits at the leading edge, label gets the bulk of the padding on the
+    // other side. Sized to land close to a normal ~40-44px button height
+    // next to other UI (a consuming app's own "Log in" button, say) rather
+    // than towering over it.
+    //
+    // pl MUST equal py here: on a rounded-full pill, the left cap is a
+    // semicircle of radius (button height / 2) centred at (that radius,
+    // half the height) - equal left/top padding puts the avatar's own
+    // centre at that exact same point, so it's concentric with the cap and
+    // clear of its curve on every side by construction, not by trial and
+    // error. Unequal padding (what was here before) stays off-centre by
+    // exactly that difference - invisible if the gap ends up wide enough
+    // on every side, but visibly lopsided otherwise, which is what was
+    // actually happening.
+    withIcon: 'min-w-[12rem] pl-2 pr-5 py-2',
+    textOnly: 'justify-center min-w-[13rem] px-7 py-3.5',
     outlinedLight:
       'bg-transparent hover:bg-gray-50 active:bg-gray-200 active:border-primary-700 active:text-primary-700 focus-visible:outline-primary-900 text-primary-900 border border-primary-900',
     outlinedDark:
       'bg-transparent focus-visible:bg-neutral-600 focus-visible:outline-neutral-500 hover:bg-neutral-700 active:border-neutral-400 active:bg-neutral-600 text-gray-200 border border-neutral-700',
+    // Themeable via the --jgroup-bankid-accent custom property, set by a
+    // consuming app on the element itself or an ancestor (crosses the
+    // shadow boundary - custom properties are inherited CSS, unlike
+    // ordinary selectors) - e.g. `jgroup-bank-id { --jgroup-bankid-accent:
+    // #a16cf0 }`. Falls back to this package's own teal when unset, so
+    // every existing consumer is unaffected. hover/active are derived with
+    // color-mix() rather than needing three separate variables from the
+    // consumer - only the avatar badge (BankID's own logo) stays fixed,
+    // per BankID's brand guidelines, regardless of this.
     light:
-      'bg-primary-900 hover:bg-primary-800 active:bg-primary-700 focus-visible:outline-primary-900 text-white',
+      'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
     dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
   };
   return (
@@ -49,22 +86,52 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
       data-test-loading={isLoading}
       class={{
         [classes.default]: true,
+        [classes.withIcon]: !isOutlined,
+        [classes.textOnly]: isOutlined,
         [classes.outlinedLight]: isOutlined && !darkTheme,
         [classes.outlinedDark]: isOutlined && darkTheme,
         [classes.light]: !isOutlined && !darkTheme,
         [classes.dark]: !isOutlined && darkTheme,
       }}
     >
-      {!isLoading ? (
-        <Fragment>
-          {!isOutlined ? <BankIdLogo color='white' /> : ''}
-          {text}
-        </Fragment>
+      {/* Avatar first, label/spinner last - the avatar stays visible across
+          both idle and loading states (own width is constant) so only the
+          label swaps, instead of the whole button changing shape. Modelled
+          on how customer sites embedding this widget already do it: a
+          white badge with the logo in its own original blue, independent
+          of whatever brand color the button itself uses. (Tried a blue
+          badge + white mark instead, matching BankID's "always use the
+          white logo in a button" guideline more literally - this one read
+          better in practice, so kept.) */}
+      {!isOutlined ? (
+        <span class='flex-shrink-0 h-9 w-9 rounded-full bg-white border border-black/10 shadow flex items-center justify-center'>
+          <BankIdLogo
+            color={primaryColor}
+            size={26}
+          />
+        </span>
       ) : (
-        <Spinner
-          classes=''
-          color={isOutlined && !darkTheme ? primaryColor : white}
-        ></Spinner>
+        ''
+      )}
+      {!isLoading ? (
+        <span class='flex-grow text-center'>{text}</span>
+      ) : (
+        <span class='flex-grow flex items-center justify-center'>
+          <Spinner
+            // Measured identical to the avatar's own 36px (h-9 w-9)
+            // footprint, but still read visually heavier/bigger than it -
+            // a thick solid ring with no surrounding circle just has more
+            // visual mass than the avatar's thin logo lines inside a soft
+            // white badge, even at the exact same bounding box. Sized down
+            // to balance that, not to literally match the pixel count.
+            classes='h-7 w-7'
+            // The non-outlined "light" variant is a white-bg bordered
+            // button now (not a solid dark fill like before) - its own
+            // background is only ever dark when darkTheme is on, same as
+            // the outlined variants already were.
+            color={darkTheme ? white : primaryColor}
+          ></Spinner>
+        </span>
       )}
     </button>
   );
@@ -84,11 +151,15 @@ export const CancelButton: FunctionalComponent<CancelButtonProps> = ({
   darkTheme,
 }) => {
   const classes = {
+    // No hover:shadow or background fill - this is a plain text action, de-
+    // emphasized below even the outlined secondary button, so a pill-shaped
+    // grey box suddenly appearing (with a shadow under it, to boot) behind
+    // the word on hover read as an odd disconnected shape popping in rather
+    // than a natural hover state. A color + underline change instead.
     default:
-      'inline-flex items-center justify-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed w-20 h-9 px-3.5 py-2 text-sm font-semibold shadow-sm',
-    light:
-      'bg-white border border-gray-300 active:border-gray-400 text-primary-900 active:text-primary-700 ring-gray-300 hover:bg-gray-50 focus-visible:outline-primary-700 outline-offset-2',
-    dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
+      'inline-flex items-center justify-center rounded-full disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium hover:underline transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+    light: 'text-neutral-500 hover:text-neutral-700 active:text-neutral-800 focus-visible:outline-primary-700',
+    dark: 'text-neutral-400 hover:text-neutral-200 active:text-neutral-100 focus-visible:outline-neutral-500',
   };
 
   return (
@@ -135,20 +206,23 @@ export const Alert: FunctionalComponent<AlertProps> = ({
   darkTheme,
 }) => {
   const alertClasses = {
-    error: 'border-red-400',
-    info: 'border-primary-400',
-    dark: 'bg-neutral-800 text-white',
+    dark: 'bg-neutral-800 text-neutral-100',
     light:
       type === 'error'
-        ? 'bg-red-50 text-red-700'
-        : 'bg-primary-50 text-primary-700',
+        ? 'bg-red-50 text-red-800'
+        : 'bg-primary-50 text-primary-800',
+  };
+
+  const badgeClasses = {
+    dark: type === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-primary-500/20 text-primary-300',
+    light: type === 'error' ? 'bg-red-100 text-red-600' : 'bg-primary-100 text-primary-700',
   };
 
   const tryAgainButtonClasses = {
     default:
-      'rounded-md px-3.5 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-red-300',
-    dark: 'bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-600 text-white',
-    light: 'bg-red-50 text-red-800 hover:bg-red-100',
+      'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150',
+    dark: 'bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white',
+    light: 'bg-white hover:bg-red-100 active:bg-red-200 text-red-800 shadow-sm',
   };
 
   return (
@@ -164,64 +238,70 @@ export const Alert: FunctionalComponent<AlertProps> = ({
       role={type === 'error' ? 'alert' : undefined}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
       class={{
-        'border-l-4 p-4 mb-4 animate-fade': true,
-        [alertClasses[type]]: true,
+        'rounded-xl p-4 mb-4 animate-fade flex items-start gap-3': true,
         [darkTheme ? alertClasses.dark : alertClasses.light]: true,
       }}
     >
-      <div class='flex'>
-        <div class='flex-shrink-0'>
-          {type === 'error' ? (
-            <svg
-              class='h-5 w-5 text-red-400'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-              aria-hidden='true'
+      <div
+        class={{
+          'flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center': true,
+          [darkTheme ? badgeClasses.dark : badgeClasses.light]: true,
+        }}
+      >
+        {type === 'error' ? (
+          <svg
+            class='h-5 w-5'
+            viewBox='0 0 20 20'
+            fill='currentColor'
+            aria-hidden='true'
+          >
+            <path
+              fill-rule='evenodd'
+              d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z'
+              clip-rule='evenodd'
+            />
+          </svg>
+        ) : (
+          <svg
+            class='h-5 w-5'
+            viewBox='0 0 20 20'
+            fill='currentColor'
+            aria-hidden='true'
+          >
+            <path
+              fill-rule='evenodd'
+              d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z'
+              clip-rule='evenodd'
+            />
+          </svg>
+        )}
+      </div>
+      <div class='pt-2'>
+        {/* items-start keeps the icon pinned to the top for long/wrapped
+            messages (centering it against the whole block looks wrong once
+            there are 3+ lines); this top padding instead nudges just the
+            first line down to align its own vertical center with the
+            icon's - icon h-10 (40px) vs text-sm/leading-relaxed's ~22.75px
+            line box, so (40-22.75)/2 ≈ 8.6px, closest to pt-2 (8px). */}
+        <p class='text-sm leading-relaxed'>{message}</p>
+        {type === 'error' ? (
+          <div class='mt-3'>
+            <button
+              type='button'
+              onClick={onTryAgainButtonClick}
+              data-test-id='try-again-button'
+              class={{
+                [tryAgainButtonClasses.default]: true,
+                [tryAgainButtonClasses.light]: !darkTheme,
+                [tryAgainButtonClasses.dark]: darkTheme,
+              }}
             >
-              <path
-                fill-rule='evenodd'
-                d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z'
-                clip-rule='evenodd'
-              />
-            </svg>
-          ) : (
-            <svg
-              class='h-5 w-5 text-primary-400'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-              aria-hidden='true'
-            >
-              <path
-                fill-rule='evenodd'
-                d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z'
-                clip-rule='evenodd'
-              />
-            </svg>
-          )}
-        </div>
-        <div class='ml-3'>
-          <p class='text-sm'>{message}</p>
-          {type === 'error' ? (
-            <div class='mt-4'>
-              <div class='-mx-2 -my-1.5 flex'>
-                <button
-                  type='button'
-                  onClick={onTryAgainButtonClick}
-                  data-test-id='try-again-button'
-                  class={{
-                    [tryAgainButtonClasses.default]: true,
-                    [tryAgainButtonClasses.light]: !darkTheme,
-                    [tryAgainButtonClasses.dark]: darkTheme,
-                  }}
-                >
-                  {tryAgainButtonText}
-                </button>
-              </div>
-            </div>
-          ) : (
-            ''
-          )}
-        </div>
+              {tryAgainButtonText}
+            </button>
+          </div>
+        ) : (
+          ''
+        )}
       </div>
     </div>
   );
@@ -258,12 +338,13 @@ export const Spinner: FunctionalComponent<SpinnerProps> = ({
 
 interface BankIdLogoProps {
   color: string;
+  size?: number;
 }
 
-export const BankIdLogo: FunctionalComponent<BankIdLogoProps> = ({ color }) => (
+export const BankIdLogo: FunctionalComponent<BankIdLogoProps> = ({ color, size = 32 }) => (
   <svg
-    width='32px'
-    height='32px'
+    width={`${size}px`}
+    height={`${size}px`}
     viewBox='0 0 39 39'
     xmlns='http://www.w3.org/2000/svg'
     aria-hidden='true'

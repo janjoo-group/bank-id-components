@@ -35,6 +35,13 @@ function cancel(instance: InstanceType<typeof JgroupBankId>) {
   return (instance as unknown as { cancel(): Promise<void> }).cancel();
 }
 
+// reset() is what the Alert's own "try again" button calls directly -
+// skipping cancel() entirely, which is exactly why it used to leave a
+// consuming app's own state stuck (see the describe block below).
+function reset(instance: InstanceType<typeof JgroupBankId>) {
+  return (instance as unknown as { reset(): Promise<void> }).reset();
+}
+
 beforeEach(() => {
   mockPost.mockReset();
 });
@@ -197,6 +204,41 @@ describe('jgroup-bank-id: cancel()', () => {
     expect(cancelledHandler).toHaveBeenCalledTimes(1);
     expect(instance.isInProgress).toBe(false);
     expect(instance.isCancelling).toBe(false);
+    expect(startButtonWouldRender(page)).toBe(true);
+  });
+});
+
+describe('jgroup-bank-id: reset() (what the Alert\'s own "try again" button calls)', () => {
+  it('emits cancelled too, not just explicit cancel() - a consuming app has no other way to learn the widget went back to idle', async () => {
+    const { page, instance } = await newAuthPage();
+
+    mockPost.mockResolvedValueOnce({
+      data: {
+        autoStartToken: 'token',
+        transactionId: 'txn-1',
+        qrCode: 'qr-data',
+      },
+    });
+    mockPost.mockResolvedValueOnce({
+      data: { status: 'pending', transactionId: 'txn-1', hintCode: 'outstandingTransaction' },
+    });
+
+    void start(instance);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await page.waitForChanges();
+
+    expect(instance.isInProgress).toBe(true);
+
+    const cancelledHandler = jest.fn();
+    page.root!.addEventListener('cancelled', cancelledHandler);
+
+    mockPost.mockResolvedValueOnce({ data: {} }); // the cancel-url POST reset() itself issues
+
+    await reset(instance);
+    await page.waitForChanges();
+
+    expect(cancelledHandler).toHaveBeenCalledTimes(1);
+    expect(instance.isInProgress).toBe(false);
     expect(startButtonWouldRender(page)).toBe(true);
   });
 });

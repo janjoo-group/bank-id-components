@@ -6,27 +6,243 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"
     />
-    <title>Stencil Component Starter</title>
+    <title>jgroup-bank-id dev harness</title>
 
     <style>
+      * { box-sizing: border-box; }
       body {
-        font-family: sans-serif;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        min-height: 100vh;
+      }
+      #stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 150ms ease;
+      }
+      #stage.light { background: #f4f4f5; }
+      #stage.dark { background: #0d1117; }
+      #widget-host { width: 360px; }
+
+      #panel {
+        border-left: 1px solid #e4e4e7;
+        background: #fff;
+        padding: 20px;
+        overflow-y: auto;
+        font-size: 13px;
+        color: #27272a;
+      }
+      #panel h2 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #71717a;
+        margin: 20px 0 8px;
+      }
+      #panel h2:first-child { margin-top: 0; }
+      #panel .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        gap: 8px;
+      }
+      #panel select, #panel button {
+        font: inherit;
+        font-size: 12.5px;
+      }
+      #panel button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 7px 10px;
+        margin-bottom: 4px;
+        border: 1px solid #e4e4e7;
+        border-radius: 6px;
+        background: #fafafa;
+        cursor: pointer;
+      }
+      #panel button:hover { background: #f0f0f1; }
+      #panel button.danger { color: #b91c1c; }
+      #panel button.primary { background: #18181b; color: #fff; border-color: #18181b; }
+      #log {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        background: #fafafa;
+        border: 1px solid #e4e4e7;
+        border-radius: 6px;
+        padding: 8px;
+        height: 120px;
+        overflow-y: auto;
+        white-space: pre-wrap;
       }
     </style>
 
-    <script
-      type="module"
-      src="/build/jgroup-bank-id-components.esm.js"
-    ></script>
+    <script type="module" src="/build/jgroup-bank-id-components.esm.js"></script>
     <script nomodule src="/build/jgroup-bank-id-components.js"></script>
   </head>
   <body>
-    <jgroup-bank-id
-      type="auth"
-      auth-url="http://forms.test/submissions/23dd89a4-89ec-4d3c-866c-4a0166f18b9d/esign/multi/auth/esigner"
-      collect-url="http://forms.test/submissions/23dd89a4-89ec-4d3c-866c-4a0166f18b9d/esign/multi/auth/esigner/collect"
-      cancel-url="http://forms.test/submissions/23dd89a4-89ec-4d3c-866c-4a0166f18b9d/esign/multi/auth/esigner/cancel"
-      language="sv"
-    ></jgroup-bank-id>
+    <div id="stage" class="light">
+      <div id="widget-host"></div>
+    </div>
+
+    <div id="panel">
+      <h2>Props</h2>
+      <div class="row">
+        <label for="type-select">type</label>
+        <select id="type-select">
+          <option value="auth">auth</option>
+          <option value="sign">sign</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="language-select">language</label>
+        <select id="language-select">
+          <option value="sv">sv</option>
+          <option value="en">en</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="dark-theme-check">darkTheme</label>
+        <input type="checkbox" id="dark-theme-check" />
+      </div>
+      <div class="row">
+        <label for="auto-start-check">autoStartSingleOption</label>
+        <input type="checkbox" id="auto-start-check" />
+      </div>
+      <div class="row">
+        <label for="mobile-check">Simulate mobile device</label>
+        <input type="checkbox" id="mobile-check" />
+      </div>
+      <div class="row">
+        <label for="loading-check">Force loading state</label>
+        <input type="checkbox" id="loading-check" />
+      </div>
+      <button id="remount-button">↺ Remount widget (idle state)</button>
+
+      <h2>Pending</h2>
+      <button data-status="pending" data-hint="outstandingTransaction">Väntar på skanning (outstandingTransaction)</button>
+      <button data-status="pending" data-hint="started">Startad (started)</button>
+      <button data-status="pending" data-hint="userSign">Signerar i appen (userSign)</button>
+      <button data-status="pending" data-hint="userMrtd">Fotograferar ID (userMrtd)</button>
+
+      <h2>Failed</h2>
+      <button class="danger" data-status="failed" data-hint="userCancel">Avbruten av användaren (userCancel)</button>
+      <button class="danger" data-status="failed" data-hint="startFailed">Kunde inte starta (startFailed)</button>
+      <button class="danger" data-status="failed" data-hint="expiredTransaction">Utgången (expiredTransaction)</button>
+      <button class="danger" data-status="failed" data-hint="certificateErr">Certifikatfel (certificateErr)</button>
+      <button class="danger" data-status="failed" data-hint="alreadyInProgress">Redan pågående (alreadyInProgress)</button>
+      <button class="danger" data-status="failed" data-hint="requestTimeout">Timeout (requestTimeout)</button>
+      <button class="danger" data-status="failed" data-hint="maintenance">Underhåll (maintenance)</button>
+      <button class="danger" data-status="failed" data-hint="internalError">Internt fel (internalError)</button>
+      <button class="danger" data-status="failed" data-hint="unknown">Okänt fel (unknown)</button>
+
+      <h2>Terminal</h2>
+      <button class="primary" data-status="complete">✓ Complete now</button>
+
+      <h2>Events</h2>
+      <div id="log"></div>
+    </div>
+
+    <script>
+      const MOCK_API = 'http://localhost:4001';
+
+      const stage = document.getElementById('stage');
+      const widgetHost = document.getElementById('widget-host');
+      const typeSelect = document.getElementById('type-select');
+      const languageSelect = document.getElementById('language-select');
+      const darkThemeCheck = document.getElementById('dark-theme-check');
+      const autoStartCheck = document.getElementById('auto-start-check');
+      const mobileCheck = document.getElementById('mobile-check');
+      const loadingCheck = document.getElementById('loading-check');
+      const log = document.getElementById('log');
+
+      const REAL_USER_AGENT = navigator.userAgent;
+      const MOBILE_USER_AGENT =
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+
+      function logLine(text) {
+        const time = new Date().toLocaleTimeString();
+        log.textContent = `[${time}] ${text}\n${log.textContent}`;
+      }
+
+      function mountWidget() {
+        widgetHost.innerHTML = '';
+        stage.className = darkThemeCheck.checked ? 'dark' : 'light';
+        widgetHost.style.width = mobileCheck.checked ? '320px' : '360px';
+
+        // is-mobile (useDevice() in utils.ts) reads navigator.userAgent at
+        // componentWillLoad - overriding it before mounting is what flips
+        // the widget into its app/same-device flow (secondary "BankID on
+        // another device" button, no QR) instead of the desktop qr flow.
+        // Real HTTP requests still carry the browser's own UA; this only
+        // affects what the widget's own JS reads.
+        Object.defineProperty(window.navigator, 'userAgent', {
+          value: mobileCheck.checked ? MOBILE_USER_AGENT : REAL_USER_AGENT,
+          configurable: true,
+        });
+
+        const widget = document.createElement('jgroup-bank-id');
+        widget.setAttribute('type', typeSelect.value);
+        widget.setAttribute('auth-url', `${MOCK_API}/auth`);
+        widget.setAttribute('sign-url', `${MOCK_API}/sign`);
+        widget.setAttribute('collect-url', `${MOCK_API}/collect`);
+        widget.setAttribute('cancel-url', `${MOCK_API}/cancel`);
+        widget.setAttribute('language', languageSelect.value);
+        if (darkThemeCheck.checked) widget.setAttribute('dark-theme', '');
+        if (autoStartCheck.checked) widget.setAttribute('auto-start-single-option', '');
+
+        widget.addEventListener('started', (e) => logLine(`started: ${JSON.stringify(e.detail)}`));
+        widget.addEventListener('completed', (e) => logLine(`completed: ${JSON.stringify(e.detail)}`));
+        widget.addEventListener('cancelled', () => logLine('cancelled'));
+
+        widgetHost.appendChild(widget);
+
+        // A freshly-mounted widget means a freshly-started transaction next
+        // time it's started - reset the mock API back to its default
+        // pending state so a leftover failed/complete scenario from before
+        // doesn't carry over. Same for hang-start: the mock server is a
+        // separate long-lived process, so its state outlives any one page
+        // load - without this, a previous session (or a scripted test)
+        // leaving "Force loading state" checked would silently strand
+        // every later session in an unrecoverable hang, with no checkbox
+        // on screen to explain why Start never resolves.
+        setScenario('pending', 'outstandingTransaction', false);
+        setHangStart(loadingCheck.checked, false);
+      }
+
+      async function setScenario(status, hintCode, shouldLog = true) {
+        await fetch(`${MOCK_API}/dev/scenario`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, hintCode }),
+        });
+        if (shouldLog) logLine(`scenario -> status=${status} hintCode=${hintCode ?? '-'}`);
+      }
+
+      async function setHangStart(hang, shouldLog = true) {
+        await fetch(`${MOCK_API}/dev/hang-start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hang }),
+        });
+        if (shouldLog) logLine(`hang-start -> ${hang}`);
+      }
+
+      document.getElementById('remount-button').addEventListener('click', mountWidget);
+      [typeSelect, languageSelect, darkThemeCheck, autoStartCheck, mobileCheck].forEach((el) =>
+        el.addEventListener('change', mountWidget),
+      );
+      loadingCheck.addEventListener('change', () => setHangStart(loadingCheck.checked));
+
+      document.querySelectorAll('#panel button[data-status]').forEach((button) => {
+        button.addEventListener('click', () => setScenario(button.dataset.status, button.dataset.hint));
+      });
+
+      mountWidget();
+    </script>
   </body>
 </html>

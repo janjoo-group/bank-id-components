@@ -2,7 +2,16 @@ import QRLib from "qrcode";
 import isMobileLib from "is-mobile";
 export async function getQrCodeImageUrl(qrCode, options = {}) {
     try {
-        return await QRLib.toDataURL(qrCode, Object.assign({ width: 200, margin: 2, errorCorrectionLevel: 'L' }, options));
+        return await QRLib.toDataURL(qrCode, Object.assign({ width: 200,
+            // The QR spec's recommended minimum quiet zone is 4 modules - this
+            // was below that at 2. Can't make the pattern itself less dense
+            // (that's BankID's own token payload length + errorCorrectionLevel,
+            // already at 'L', the lowest/sparsest level) without either
+            // breaking the real flow or hurting scan reliability, but more
+            // margin gives the actual pattern more breathing room and, as a
+            // side effect, more context for a camera's own finder-pattern
+            // detection - a pure improvement, not just cosmetic.
+            margin: 4, errorCorrectionLevel: 'L' }, options));
     }
     catch (_a) {
         return null;

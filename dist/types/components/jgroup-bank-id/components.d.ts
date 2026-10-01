@@ -29,6 +29,7 @@ interface SpinnerProps {
 export declare const Spinner: FunctionalComponent<SpinnerProps>;
 interface BankIdLogoProps {
     color: string;
+    size?: number;
 }
 export declare const BankIdLogo: FunctionalComponent<BankIdLogoProps>;
 export {};

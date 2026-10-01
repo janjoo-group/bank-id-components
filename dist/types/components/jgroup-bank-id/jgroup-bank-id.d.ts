@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../stencil-public-runtime';
 export declare class JgroupBankId {
     /** Events */
-    /** Fired when the visitor cancels the flow, either via the cancel button or a call to cancel(). */
+    /** Fired whenever the widget returns to its idle state - the cancel button, "try again" after a failure, or an unexpected drop mid-flow. Use it to reset any "a BankID attempt is in progress" state a consuming app keeps of its own. */
     cancelled: EventEmitter;
     /** Fired once collect() resolves with a terminal 'complete' status - detail carries the raw collect response, success or business-logic error. */
     completed: EventEmitter;

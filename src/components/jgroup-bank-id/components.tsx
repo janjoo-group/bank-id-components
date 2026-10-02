@@ -13,6 +13,10 @@ interface StartButtonProps {
   text: string;
   isOutlined: boolean;
   darkTheme: boolean;
+  // 'md' is still visibly rounded (rounded-xl/rounded-lg), just not a full
+  // pill/circle - a boolean named `rounded` read as "square when off",
+  // which isn't what this variant actually looks like.
+  rounded: 'full' | 'md';
 }
 
 export const StartButton: FunctionalComponent<StartButtonProps> = ({
@@ -21,6 +25,7 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
   text,
   isOutlined,
   darkTheme,
+  rounded,
 }) => {
   const classes = {
     // No disabled:opacity-50 here deliberately - this button is only ever
@@ -37,7 +42,7 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
     // but the secondary one sits inside its own wrapper div one level in,
     // which needs the button itself told to fill it explicitly.
     default:
-      'relative w-full inline-flex items-center gap-x-3 rounded-full text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+      'relative w-full inline-flex items-center gap-x-3 text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
     // A modest min-width (not the old fixed-wide one) keeps the button from
     // visibly shrinking when its text is swapped for the loading spinner,
     // without leaving a slab of dead space next to short text. The avatar
@@ -102,7 +107,7 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
       // one identical string silently collide (the later object key wins,
       // dropping the earlier condition's class entirely - confirmed: this
       // is exactly how the outlined button lost its border).
-      class={`${classes.default} ${isOutlined ? classes.textOnly : classes.withIcon} ${
+      class={`${classes.default} ${rounded === 'full' ? 'rounded-full' : 'rounded-xl'} ${isOutlined ? classes.textOnly : classes.withIcon} ${
         isOutlined
           ? darkTheme
             ? classes.outlinedDark
@@ -122,7 +127,7 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
           white logo in a button" guideline more literally - this one read
           better in practice, so kept.) */}
       {!isOutlined ? (
-        <span class='flex-shrink-0 h-9 w-9 rounded-full bg-white border border-black/10 shadow flex items-center justify-center'>
+        <span class={`flex-shrink-0 h-9 w-9 ${rounded === 'full' ? 'rounded-full' : 'rounded-lg'} bg-white border border-black/10 shadow flex items-center justify-center`}>
           <BankIdLogo
             color={primaryColor}
             size={26}

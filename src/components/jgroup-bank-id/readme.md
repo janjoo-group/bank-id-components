@@ -7,16 +7,17 @@
 
 ## Properties
 
-| Property                  | Attribute                  | Description                                                                                    | Type               | Default     |
-| ------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------- | ------------------ | ----------- |
-| `authUrl` _(required)_    | `auth-url`                 | Endpoint that starts an authentication transaction - required when type is 'auth'.             | `string`           | `undefined` |
-| `autoStartSingleOption`   | `auto-start-single-option` | Auto-starts the flow immediately on mount, skipping the start button - desktop (qr flow) only. | `boolean`          | `false`     |
-| `cancelUrl` _(required)_  | `cancel-url`               | Endpoint called to cancel an in-progress transaction.                                          | `string`           | `undefined` |
-| `collectUrl` _(required)_ | `collect-url`              | Endpoint polled for the transaction's current status.                                          | `string`           | `undefined` |
-| `darkTheme`               | `dark-theme`               | Renders the widget with its dark color scheme.                                                 | `boolean`          | `false`     |
-| `language`                | `language`                 | UI language for all widget copy.                                                               | `"en" \| "sv"`     | `'sv'`      |
-| `signUrl` _(required)_    | `sign-url`                 | Endpoint that starts a signing transaction - required when type is 'sign'.                     | `string`           | `undefined` |
-| `type` _(required)_       | `type`                     | Whether this widget performs an authentication or a signing flow.                              | `"auth" \| "sign"` | `undefined` |
+| Property                  | Attribute                  | Description                                                                                                                                                                      | Type               | Default     |
+| ------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ----------- |
+| `authUrl` _(required)_    | `auth-url`                 | Endpoint that starts an authentication transaction - required when type is 'auth'.                                                                                               | `string`           | `undefined` |
+| `autoStartSingleOption`   | `auto-start-single-option` | Auto-starts the flow immediately on mount, skipping the start button - desktop (qr flow) only.                                                                                   | `boolean`          | `false`     |
+| `cancelUrl` _(required)_  | `cancel-url`               | Endpoint called to cancel an in-progress transaction.                                                                                                                            | `string`           | `undefined` |
+| `collectUrl` _(required)_ | `collect-url`              | Endpoint polled for the transaction's current status.                                                                                                                            | `string`           | `undefined` |
+| `darkTheme`               | `dark-theme`               | Renders the widget with its dark color scheme.                                                                                                                                   | `boolean`          | `false`     |
+| `language`                | `language`                 | UI language for all widget copy.                                                                                                                                                 | `"en" \| "sv"`     | `'sv'`      |
+| `rounded`                 | `rounded`                  | Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle. | `"full" \| "md"`   | `'full'`    |
+| `signUrl` _(required)_    | `sign-url`                 | Endpoint that starts a signing transaction - required when type is 'sign'.                                                                                                       | `string`           | `undefined` |
+| `type` _(required)_       | `type`                     | Whether this widget performs an authentication or a signing flow.                                                                                                                | `"auth" \| "sign"` | `undefined` |
 
 
 ## Events

@@ -30,6 +30,8 @@ export class JgroupBankIdButton {
   @Prop() readonly loading = false;
   /** Renders with the dark color scheme. */
   @Prop() readonly darkTheme = false;
+  /** Corner style for the button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle. */
+  @Prop() readonly rounded: 'full' | 'md' = 'full';
 
   componentWillLoad() {
     registerInterFont();
@@ -41,6 +43,7 @@ export class JgroupBankIdButton {
         <StartButton
           isOutlined={false}
           darkTheme={this.darkTheme}
+          rounded={this.rounded}
           // A real click still reaches a consumer's own listener on this
           // element - click events bubble out of a shadow root by default
           // (composed: true), so there's no need for a dedicated

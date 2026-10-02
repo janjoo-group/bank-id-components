@@ -5,6 +5,7 @@ interface StartButtonProps {
     text: string;
     isOutlined: boolean;
     darkTheme: boolean;
+    rounded: 'full' | 'md';
 }
 export declare const StartButton: FunctionalComponent<StartButtonProps>;
 interface CancelButtonProps {

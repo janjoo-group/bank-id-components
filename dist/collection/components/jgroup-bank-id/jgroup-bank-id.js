@@ -21,6 +21,7 @@ export class JgroupBankId {
         this.cancelUrl = undefined;
         this.autoStartSingleOption = false;
         this.darkTheme = false;
+        this.rounded = 'full';
         this.language = 'sv';
         this.flowType = undefined;
         this.isMobileOrTablet = false;
@@ -103,9 +104,9 @@ export class JgroupBankId {
         // buttons match the wider one's own natural content width
         // exactly, whichever that is - robust across languages/
         // translations rather than a number tuned for one piece of text.
-        h("div", { class: 'grid justify-center' }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+        h("div", { class: 'grid justify-center' }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, rounded: this.rounded, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.translate('start-qr')
-                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("div", { class: {
+                : this.translate('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, rounded: this.rounded, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.translate('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.translate(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.translate('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("div", { class: {
                 'w-fit mx-auto mb-4 p-3 rounded-xl animate-fade': true,
                 'bg-white border border-gray-200': !this.darkTheme,
                 'bg-neutral-800 border border-neutral-700': this.darkTheme,
@@ -442,6 +443,24 @@ export class JgroupBankId {
                 "attribute": "dark-theme",
                 "reflect": false,
                 "defaultValue": "false"
+            },
+            "rounded": {
+                "type": "string",
+                "mutable": false,
+                "complexType": {
+                    "original": "'full' | 'md'",
+                    "resolved": "\"full\" | \"md\"",
+                    "references": {}
+                },
+                "required": false,
+                "optional": false,
+                "docs": {
+                    "tags": [],
+                    "text": "Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle."
+                },
+                "attribute": "rounded",
+                "reflect": false,
+                "defaultValue": "'full'"
             },
             "language": {
                 "type": "string",

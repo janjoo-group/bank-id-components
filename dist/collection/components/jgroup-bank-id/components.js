@@ -4,7 +4,7 @@ import tailwindConfig from "./../../../tailwind.config.js";
 const fullConfig = resolveConfig(tailwindConfig);
 const primaryColor = fullConfig.theme.colors.primary['900'];
 const white = fullConfig.theme.colors.white;
-export const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, }) => {
+export const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded, }) => {
     const classes = {
         // No disabled:opacity-50 here deliberately - this button is only ever
         // disabled while isLoading (there's no other disabled state), so the
@@ -19,7 +19,7 @@ export const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, }
         // primary button sits directly in a grid cell (stretches on its own),
         // but the secondary one sits inside its own wrapper div one level in,
         // which needs the button itself told to fill it explicitly.
-        default: 'relative w-full inline-flex items-center gap-x-3 rounded-full text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+        default: 'relative w-full inline-flex items-center gap-x-3 text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
         // A modest min-width (not the old fixed-wide one) keeps the button from
         // visibly shrinking when its text is swapped for the loading spinner,
         // without leaving a slab of dead space next to short text. The avatar
@@ -68,13 +68,13 @@ export const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, }
         // one identical string silently collide (the later object key wins,
         // dropping the earlier condition's class entirely - confirmed: this
         // is exactly how the outlined button lost its border).
-        class: `${classes.default} ${isOutlined ? classes.textOnly : classes.withIcon} ${isOutlined
+        class: `${classes.default} ${rounded === 'full' ? 'rounded-full' : 'rounded-xl'} ${isOutlined ? classes.textOnly : classes.withIcon} ${isOutlined
             ? darkTheme
                 ? classes.outlinedDark
                 : classes.outlinedLight
             : darkTheme
                 ? classes.dark
-                : classes.light}` }, !isOutlined ? (h("span", { class: 'flex-shrink-0 h-9 w-9 rounded-full bg-white border border-black/10 shadow flex items-center justify-center' }, h(BankIdLogo, { color: primaryColor, size: 26 }))) : (''), !isLoading ? (h("span", { class: 'flex-grow text-center' }, text)) : (h("span", { class: 'flex-grow flex items-center justify-center' }, h(Spinner
+                : classes.light}` }, !isOutlined ? (h("span", { class: `flex-shrink-0 h-9 w-9 ${rounded === 'full' ? 'rounded-full' : 'rounded-lg'} bg-white border border-black/10 shadow flex items-center justify-center` }, h(BankIdLogo, { color: primaryColor, size: 26 }))) : (''), !isLoading ? (h("span", { class: 'flex-grow text-center' }, text)) : (h("span", { class: 'flex-grow flex items-center justify-center' }, h(Spinner
     // Measured identical to the avatar's own 36px (h-9 w-9)
     // footprint, but still read visually heavier/bigger than it -
     // a thick solid ring with no surrounding circle just has more

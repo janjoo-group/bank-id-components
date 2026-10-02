@@ -32,6 +32,10 @@ export namespace Components {
          */
         "language": 'sv' | 'en';
         /**
+          * Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle.
+         */
+        "rounded": 'full' | 'md';
+        /**
           * Endpoint that starts a signing transaction - required when type is 'sign'.
          */
         "signUrl": string;
@@ -66,6 +70,10 @@ export namespace Components {
           * Swaps the label out for a spinner and disables the button - the only disabled state StartButton itself actually supports (no separate "disabled but still showing the label" state to extract).
          */
         "loading": false;
+        /**
+          * Corner style for the button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle.
+         */
+        "rounded": 'full' | 'md';
     }
 }
 export interface JgroupBankIdCustomEvent<T> extends CustomEvent<T> {
@@ -155,6 +163,10 @@ declare namespace LocalJSX {
          */
         "onStarted"?: (event: JgroupBankIdCustomEvent<any>) => void;
         /**
+          * Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle.
+         */
+        "rounded"?: 'full' | 'md';
+        /**
           * Endpoint that starts a signing transaction - required when type is 'sign'.
          */
         "signUrl": string;
@@ -189,6 +201,10 @@ declare namespace LocalJSX {
           * Swaps the label out for a spinner and disables the button - the only disabled state StartButton itself actually supports (no separate "disabled but still showing the label" state to extract).
          */
         "loading"?: false;
+        /**
+          * Corner style for the button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle.
+         */
+        "rounded"?: 'full' | 'md';
     }
     interface IntrinsicElements {
         "jgroup-bank-id": JgroupBankId;

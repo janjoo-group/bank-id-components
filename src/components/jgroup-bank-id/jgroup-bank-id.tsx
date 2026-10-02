@@ -49,6 +49,8 @@ export class JgroupBankId {
   @Prop() readonly autoStartSingleOption = false;
   /** Renders the widget with its dark color scheme. */
   @Prop() readonly darkTheme = false;
+  /** Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle. */
+  @Prop() readonly rounded: 'full' | 'md' = 'full';
   /** UI language for all widget copy. */
   @Prop() readonly language: 'sv' | 'en' = 'sv';
 
@@ -176,6 +178,7 @@ export class JgroupBankId {
             <StartButton
               isOutlined={false}
               darkTheme={this.darkTheme}
+              rounded={this.rounded}
               onClick={this.init}
               isLoading={this.isStarting && !this.isStartingOnAnotherDevice}
               text={
@@ -189,6 +192,7 @@ export class JgroupBankId {
                 <StartButton
                   isOutlined={true}
                   darkTheme={this.darkTheme}
+                  rounded={this.rounded}
                   onClick={this.startOnAnotherDevice}
                   isLoading={this.isStarting && this.isStartingOnAnotherDevice}
                   text={this.translate('start-qr-another-device')}

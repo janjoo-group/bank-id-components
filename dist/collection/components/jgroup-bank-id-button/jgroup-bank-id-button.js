@@ -20,12 +20,13 @@ export class JgroupBankIdButton {
         this.label = undefined;
         this.loading = false;
         this.darkTheme = false;
+        this.rounded = 'full';
     }
     componentWillLoad() {
         registerInterFont();
     }
     render() {
-        return (h(Host, null, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme,
+        return (h(Host, null, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, rounded: this.rounded,
             // A real click still reaches a consumer's own listener on this
             // element - click events bubble out of a shadow root by default
             // (composed: true), so there's no need for a dedicated
@@ -98,6 +99,24 @@ export class JgroupBankIdButton {
                 "attribute": "dark-theme",
                 "reflect": false,
                 "defaultValue": "false"
+            },
+            "rounded": {
+                "type": "string",
+                "mutable": false,
+                "complexType": {
+                    "original": "'full' | 'md'",
+                    "resolved": "\"full\" | \"md\"",
+                    "references": {}
+                },
+                "required": false,
+                "optional": false,
+                "docs": {
+                    "tags": [],
+                    "text": "Corner style for the button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle."
+                },
+                "attribute": "rounded",
+                "reflect": false,
+                "defaultValue": "'full'"
             }
         };
     }

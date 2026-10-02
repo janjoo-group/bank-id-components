@@ -110,6 +110,13 @@
         <input type="checkbox" id="dark-theme-check" />
       </div>
       <div class="row">
+        <label for="rounded-select">rounded</label>
+        <select id="rounded-select">
+          <option value="full">full</option>
+          <option value="md">md</option>
+        </select>
+      </div>
+      <div class="row">
         <label for="auto-start-check">autoStartSingleOption</label>
         <input type="checkbox" id="auto-start-check" />
       </div>
@@ -155,6 +162,7 @@
       const typeSelect = document.getElementById('type-select');
       const languageSelect = document.getElementById('language-select');
       const darkThemeCheck = document.getElementById('dark-theme-check');
+      const roundedSelect = document.getElementById('rounded-select');
       const autoStartCheck = document.getElementById('auto-start-check');
       const mobileCheck = document.getElementById('mobile-check');
       const loadingCheck = document.getElementById('loading-check');
@@ -193,6 +201,7 @@
         widget.setAttribute('cancel-url', `${MOCK_API}/cancel`);
         widget.setAttribute('language', languageSelect.value);
         if (darkThemeCheck.checked) widget.setAttribute('dark-theme', '');
+        widget.setAttribute('rounded', roundedSelect.value);
         if (autoStartCheck.checked) widget.setAttribute('auto-start-single-option', '');
 
         widget.addEventListener('started', (e) => logLine(`started: ${JSON.stringify(e.detail)}`));
@@ -233,7 +242,7 @@
       }
 
       document.getElementById('remount-button').addEventListener('click', mountWidget);
-      [typeSelect, languageSelect, darkThemeCheck, autoStartCheck, mobileCheck].forEach((el) =>
+      [typeSelect, languageSelect, darkThemeCheck, roundedSelect, autoStartCheck, mobileCheck].forEach((el) =>
         el.addEventListener('change', mountWidget),
       );
       loadingCheck.addEventListener('change', () => setHangStart(loadingCheck.checked));

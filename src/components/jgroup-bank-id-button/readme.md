@@ -22,11 +22,12 @@ second copy that can drift from the real widget's own button over time.
 
 ## Properties
 
-| Property             | Attribute    | Description                                                                                                                                                                                     | Type      | Default     |
-| -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ----------- |
-| `darkTheme`          | `dark-theme` | Renders with the dark color scheme.                                                                                                                                                             | `boolean` | `false`     |
-| `label` _(required)_ | `label`      | Button label.                                                                                                                                                                                   | `string`  | `undefined` |
-| `loading`            | `loading`    | Swaps the label out for a spinner and disables the button - the only disabled state StartButton itself actually supports (no separate "disabled but still showing the label" state to extract). | `boolean` | `false`     |
+| Property             | Attribute    | Description                                                                                                                                                                                     | Type             | Default     |
+| -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ----------- |
+| `darkTheme`          | `dark-theme` | Renders with the dark color scheme.                                                                                                                                                             | `boolean`        | `false`     |
+| `label` _(required)_ | `label`      | Button label.                                                                                                                                                                                   | `string`         | `undefined` |
+| `loading`            | `loading`    | Swaps the label out for a spinner and disables the button - the only disabled state StartButton itself actually supports (no separate "disabled but still showing the label" state to extract). | `boolean`        | `false`     |
+| `rounded`            | `rounded`    | Corner style for the button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle.                      | `"full" \| "md"` | `'full'`    |
 
 
 ----------------------------------------------

@@ -21,6 +21,8 @@ export declare class JgroupBankIdButton {
     readonly loading = false;
     /** Renders with the dark color scheme. */
     readonly darkTheme = false;
+    /** Corner style for the button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle. */
+    readonly rounded: 'full' | 'md';
     componentWillLoad(): void;
     render(): any;
 }

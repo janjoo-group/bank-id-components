@@ -22,6 +22,8 @@ export declare class JgroupBankId {
     readonly autoStartSingleOption = false;
     /** Renders the widget with its dark color scheme. */
     readonly darkTheme = false;
+    /** Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle. */
+    readonly rounded: 'full' | 'md';
     /** UI language for all widget copy. */
     readonly language: 'sv' | 'en';
     /** Watchers for prop validation */

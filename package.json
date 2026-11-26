@@ -1,6 +1,6 @@
 {
   "name": "jgroup-bank-id-components",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "Stencil web component for Swedish BankID authentication/signing flows",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",

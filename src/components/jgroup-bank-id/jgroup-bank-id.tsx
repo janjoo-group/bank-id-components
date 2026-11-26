@@ -132,9 +132,15 @@ export class JgroupBankId {
   private TAG = '[jgroup-bank-id]';
   private propsValid = true;
   private propsValidationErrorMessage: string | null = null;
-  private translate = createTranslateFunction(this.language);
   private isPolling = false;
   private currentTransactionId: string | null = null;
+
+  // Not `translate`: in the custom-elements build this class is the element,
+  // and HTMLElement.translate reflects to an attribute. Reads `language` per
+  // call, since it is set after the constructor has run.
+  private t(...keys: string[]): string {
+    return createTranslateFunction(this.language)(...keys);
+  }
 
   /** Lifecycle */
   componentWillLoad() {
@@ -183,8 +189,8 @@ export class JgroupBankId {
               isLoading={this.isStarting && !this.isStartingOnAnotherDevice}
               text={
                 this.flowType === 'qr' && !this.isStartingOnAnotherDevice
-                  ? this.translate('start-qr')
-                  : this.translate('start-app')
+                  ? this.t('start-qr')
+                  : this.t('start-app')
               }
             />
             {this.isMobileOrTablet && (
@@ -195,7 +201,7 @@ export class JgroupBankId {
                   rounded={this.rounded}
                   onClick={this.startOnAnotherDevice}
                   isLoading={this.isStarting && this.isStartingOnAnotherDevice}
-                  text={this.translate('start-qr-another-device')}
+                  text={this.t('start-qr-another-device')}
                 />
               </div>
             )}
@@ -204,12 +210,12 @@ export class JgroupBankId {
 
         {this.shouldRenderStatusHint && (
           <Alert
-            message={this.translate(
+            message={this.t(
               `hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`,
               `hintcode-${this.statusHintCode || 'unknown'}`,
             )}
             type={this.status === 'failed' ? 'error' : 'info'}
-            tryAgainButtonText={this.translate('try-again')}
+            tryAgainButtonText={this.t('try-again')}
             onTryAgainButtonClick={this.reset}
             darkTheme={this.darkTheme}
           />
@@ -225,7 +231,7 @@ export class JgroupBankId {
           >
             <img
               src={this.qrCodeImageUrl ?? undefined}
-              alt={this.translate('qr-code-alt')}
+              alt={this.t('qr-code-alt')}
               class='block rounded-lg'
             />
           </div>
@@ -237,7 +243,7 @@ export class JgroupBankId {
             aria-live='polite'
             class='text-center animate-fade'
           >
-            {this.translate('app-in-progress')}
+            {this.t('app-in-progress')}
           </p>
         )}
 
@@ -245,7 +251,7 @@ export class JgroupBankId {
           <p class='text-center animate-fade'>
             <CancelButton
               onClick={this.cancel}
-              text={this.translate('cancel')}
+              text={this.t('cancel')}
               isLoading={this.isCancelling}
               darkTheme={this.darkTheme}
             />

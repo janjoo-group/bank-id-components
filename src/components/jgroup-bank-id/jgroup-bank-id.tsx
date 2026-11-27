@@ -51,6 +51,8 @@ export class JgroupBankId {
   @Prop() readonly darkTheme = false;
   /** Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle. */
   @Prop() readonly rounded: 'full' | 'md' = 'full';
+  /** Stretches the start buttons to the full width of the container, like a consuming app's own full-width buttons, instead of the width of their text. */
+  @Prop() readonly block = false;
   /** UI language for all widget copy. */
   @Prop() readonly language: 'sv' | 'en' = 'sv';
 
@@ -173,17 +175,19 @@ export class JgroupBankId {
     }
 
     return (
-      <Host>
+      // data-theme picks the scheme's colors in jgroup-bank-id.css.
+      <Host data-theme={this.darkTheme ? 'dark' : 'light'}>
         {this.shouldRenderStartButtons && (
           // A grid, not flex - a grid's single implicit column auto-sizes
           // to its widest row (justify-items defaults to stretch), so both
           // buttons match the wider one's own natural content width
           // exactly, whichever that is - robust across languages/
           // translations rather than a number tuned for one piece of text.
-          <div class='grid justify-center'>
+          // With block, the column is the container's full width instead.
+          <div class={this.block ? 'grid' : 'grid justify-center'}>
             <StartButton
               isOutlined={false}
-              darkTheme={this.darkTheme}
+              block={this.block}
               rounded={this.rounded}
               onClick={this.init}
               isLoading={this.isStarting && !this.isStartingOnAnotherDevice}
@@ -197,7 +201,6 @@ export class JgroupBankId {
               <div class='mt-4'>
                 <StartButton
                   isOutlined={true}
-                  darkTheme={this.darkTheme}
                   rounded={this.rounded}
                   onClick={this.startOnAnotherDevice}
                   isLoading={this.isStarting && this.isStartingOnAnotherDevice}
@@ -223,11 +226,7 @@ export class JgroupBankId {
 
         {this.shouldRenderQrImage && (
           <div
-            class={{
-              'w-fit mx-auto mb-4 p-3 rounded-xl animate-fade': true,
-              'bg-white border border-gray-200': !this.darkTheme,
-              'bg-neutral-800 border border-neutral-700': this.darkTheme,
-            }}
+            class='w-fit mx-auto mb-4 p-3 rounded-xl animate-fade border bg-[color:var(--jbid-qr-background)] border-[color:var(--jbid-qr-border)]'
           >
             <img
               src={this.qrCodeImageUrl ?? undefined}
@@ -253,7 +252,6 @@ export class JgroupBankId {
               onClick={this.cancel}
               text={this.t('cancel')}
               isLoading={this.isCancelling}
-              darkTheme={this.darkTheme}
             />
           </p>
         )}

@@ -1,6 +1,4 @@
-'use strict';
-
-const index = require('./index-174af952.js');
+import { h } from './index-e428309d.js';
 
 // Inter (OFL-1.1 licensed, https://github.com/rsms/inter), self-hosted so
 // the widget's text renders identically everywhere it's embedded instead
@@ -4613,9 +4611,10 @@ const tailwindConfig = {
 };
 
 const fullConfig = resolveConfig_1(tailwindConfig);
+// The BankID logo's own blue, fixed per BankID's brand guidelines - every
+// other color comes from the --jbid-* variables in jgroup-bank-id.css.
 const primaryColor = fullConfig.theme.colors.primary['900'];
-const white = fullConfig.theme.colors.white;
-const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded, }) => {
+const StartButton = ({ onClick, isLoading, text, isOutlined, block = false, rounded, }) => {
     const classes = {
         // No disabled:opacity-50 here deliberately - this button is only ever
         // disabled while isLoading (there's no other disabled state), so the
@@ -4630,7 +4629,12 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
         // primary button sits directly in a grid cell (stretches on its own),
         // but the secondary one sits inside its own wrapper div one level in,
         // which needs the button itself told to fill it explicitly.
-        default: 'relative w-full inline-flex items-center gap-x-3 text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+        // The shadows are Tailwind's shadow-sm and shadow-md, overridable with
+        // --jgroup-bankid-button-shadow(-hover), e.g. `none` for an app whose
+        // own buttons are flat. (Underscores are spaces in a Tailwind value.)
+        // --jgroup-bankid-font-size sets the label; the line stays 20px, which
+        // the heights below count on.
+        default: 'relative w-full inline-flex items-center gap-x-3 text-[length:var(--jgroup-bankid-font-size,0.875rem)] leading-5 font-semibold shadow-[var(--jgroup-bankid-button-shadow,0_1px_2px_0_rgb(0_0_0/0.05))] hover:shadow-[var(--jgroup-bankid-button-shadow-hover,0_4px_6px_-1px_rgb(0_0_0/0.1),0_2px_4px_-2px_rgb(0_0_0/0.1))] transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-[var(--jgroup-bankid-button-shadow,0_1px_2px_0_rgb(0_0_0/0.05))]',
         // A modest min-width (not the old fixed-wide one) keeps the button from
         // visibly shrinking when its text is swapped for the loading spinner,
         // without leaving a slab of dead space next to short text. The avatar
@@ -4648,30 +4652,33 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
         // exactly that difference - invisible if the gap ends up wide enough
         // on every side, but visibly lopsided otherwise, which is what was
         // actually happening.
-        withIcon: 'min-w-[12rem] pl-2 pr-5 py-2',
-        // Same min-width as withIcon, and py-4 lands at the same ~52px total
-        // height (py-2 + the 36px avatar there vs py-4 + text-sm's own 20px
-        // line-height here) - same button, just without the avatar.
-        textOnly: 'justify-center min-w-[12rem] px-5 py-4',
-        // Matches the "light" variant below exactly (white bg, grey border,
-        // same hover/active, same themeable accent text) - this is the same
-        // button language, just without the avatar badge, not a different
-        // style.
-        outlinedLight: 'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
-        outlinedDark: 'bg-transparent focus-visible:bg-neutral-600 focus-visible:outline-neutral-500 hover:bg-neutral-700 active:border-neutral-400 active:bg-neutral-600 text-gray-200 border border-neutral-700',
-        // Themeable via the --jgroup-bankid-accent custom property, set by a
-        // consuming app on the element itself or an ancestor (crosses the
-        // shadow boundary - custom properties are inherited CSS, unlike
-        // ordinary selectors) - e.g. `jgroup-bank-id { --jgroup-bankid-accent:
-        // #a16cf0 }`. Falls back to this package's own teal when unset, so
-        // every existing consumer is unaffected. hover/active are derived with
-        // color-mix() rather than needing three separate variables from the
-        // consumer - only the avatar badge (BankID's own logo) stays fixed,
-        // per BankID's brand guidelines, regardless of this.
-        light: 'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
-        dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
+        //
+        // Both are worked out from --jgroup-bankid-button-height and
+        // --jgroup-bankid-badge-size, so that an app sets the height it wants
+        // and the badge sits concentric in it: (height - badge - the 2px of
+        // border) / 2. Unset, that is 54px and 36px, i.e. py-2 and pl-2.
+        withIcon: 'min-w-[12rem] pl-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)] pr-5 py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)]',
+        // With block, the right padding matches the badge side (inset + badge
+        // + the gap-x-3), so the label is centered on the whole button.
+        withIconBlock: 'min-w-[12rem] pl-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)] pr-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2_+_var(--jgroup-bankid-badge-size,2.25rem)_+_0.75rem)] py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)]',
+        // Same min-width and height as withIcon - the same button, just without
+        // the avatar: (height - the label's 20px line - 2px of border) / 2,
+        // py-4 unset.
+        textOnly: 'justify-center min-w-[12rem] px-5 py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_1.25rem_-_2px)/2)]',
+        // Both schemes, light and dark, and anything a consuming app sets, come
+        // from the --jbid-* variables in jgroup-bank-id.css - one set for the
+        // primary button (with the badge) and one for the outlined secondary
+        // one, so the markup no longer picks classes per scheme.
+        primary: 'bg-[color:var(--jbid-button-background)] hover:bg-[color:var(--jbid-button-background-hover)] active:bg-[color:var(--jbid-button-background-active)] focus-visible:bg-[color:var(--jbid-button-background-focus)] border border-[color:var(--jbid-button-border)] active:border-[color:var(--jbid-button-border-active)] text-[color:var(--jbid-button-text)] focus-visible:outline-[color:var(--jbid-focus)]',
+        secondary: 'bg-[color:var(--jbid-secondary-background)] hover:bg-[color:var(--jbid-secondary-background-hover)] active:bg-[color:var(--jbid-secondary-background-active)] focus-visible:bg-[color:var(--jbid-secondary-background-focus)] border border-[color:var(--jbid-secondary-border)] active:border-[color:var(--jbid-secondary-border-active)] text-[color:var(--jbid-secondary-text)] focus-visible:outline-[color:var(--jbid-focus)]',
+        // --jgroup-bankid-button-radius overrides the rounded prop's corners,
+        // for an app whose own buttons have some other radius.
+        corners: {
+            full: 'rounded-[var(--jgroup-bankid-button-radius,9999px)]',
+            md: 'rounded-[var(--jgroup-bankid-button-radius,0.75rem)]',
+        },
     };
-    return (index.h("button", { type: 'button', disabled: isLoading, onClick: onClick, "aria-label": text, "data-test-id": 'start-button', "data-test-loading": isLoading, 
+    return (h("button", { type: 'button', disabled: isLoading, onClick: onClick, "aria-label": text, "data-test-id": 'start-button', "data-test-loading": isLoading, 
         // A plain template string, not the {[classString]: condition} map
         // form - outlinedLight and light are now the same string (same
         // button language, badge or no badge), and that map form keys on
@@ -4679,17 +4686,14 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
         // one identical string silently collide (the later object key wins,
         // dropping the earlier condition's class entirely - confirmed: this
         // is exactly how the outlined button lost its border).
-        class: `${classes.default} ${rounded === 'full' ? 'rounded-full' : 'rounded-xl'} ${isOutlined ? classes.textOnly : classes.withIcon} ${isOutlined
-            ? darkTheme
-                ? classes.outlinedDark
-                : classes.outlinedLight
-            : darkTheme
-                ? classes.dark
-                : classes.light}` },
-        !isOutlined ? (index.h("span", { class: `flex-shrink-0 h-9 w-9 ${rounded === 'full' ? 'rounded-full' : 'rounded-lg'} bg-white border border-black/10 shadow flex items-center justify-center` },
-            index.h(BankIdLogo, { color: primaryColor, size: 26 }))) : (''),
-        !isLoading ? (index.h("span", { class: 'flex-grow text-center' }, text)) : (index.h("span", { class: 'flex-grow flex items-center justify-center' },
-            index.h(Spinner
+        class: `${classes.default} ${classes.corners[rounded]} ${isOutlined ? classes.textOnly : block ? classes.withIconBlock : classes.withIcon} ${isOutlined ? classes.secondary : classes.primary}` },
+        !isOutlined ? (h("span", { class: `flex-shrink-0 h-[var(--jgroup-bankid-badge-size,2.25rem)] w-[var(--jgroup-bankid-badge-size,2.25rem)] ${rounded === 'full' ? 'rounded-[var(--jgroup-bankid-badge-radius,9999px)]' : 'rounded-[var(--jgroup-bankid-badge-radius,0.5rem)]'} bg-white border border-black/10 shadow flex items-center justify-center` },
+            h(BankIdLogo, { color: primaryColor, 
+                // The mark's share of the badge, whatever size the badge is; the
+                // rest is the badge's own white clear space around it.
+                size: '76%' }))) : (''),
+        !isLoading ? (h("span", { class: 'flex-grow text-center' }, text)) : (h("span", { class: 'flex-grow flex items-center justify-center' },
+            h(Spinner
             // Measured identical to the avatar's own 36px (h-9 w-9)
             // footprint, but still read visually heavier/bigger than it -
             // a thick solid ring with no surrounding circle just has more
@@ -4703,14 +4707,9 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
                 // visual mass than the avatar's thin logo lines inside a soft
                 // white badge, even at the exact same bounding box. Sized down
                 // to balance that, not to literally match the pixel count.
-                classes: 'h-7 w-7', 
-                // The non-outlined "light" variant is a white-bg bordered
-                // button now (not a solid dark fill like before) - its own
-                // background is only ever dark when darkTheme is on, same as
-                // the outlined variants already were.
-                color: darkTheme ? white : primaryColor })))));
+                classes: 'h-[calc(var(--jgroup-bankid-badge-size,2.25rem)_*_0.78)] w-[calc(var(--jgroup-bankid-badge-size,2.25rem)_*_0.78)]' })))));
 };
-const CancelButton = ({ onClick, text, isLoading, darkTheme, }) => {
+const CancelButton = ({ onClick, text, isLoading, }) => {
     const classes = {
         // No hover:shadow or background fill - this is a plain text action, de-
         // emphasized below even the outlined secondary button, so a pill-shaped
@@ -4718,79 +4717,65 @@ const CancelButton = ({ onClick, text, isLoading, darkTheme, }) => {
         // the word on hover read as an odd disconnected shape popping in rather
         // than a natural hover state. A color + underline change instead.
         default: 'inline-flex items-center justify-center rounded-full disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium hover:underline transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-        light: 'text-neutral-500 hover:text-neutral-700 active:text-neutral-800 focus-visible:outline-primary-700',
-        dark: 'text-neutral-400 hover:text-neutral-200 active:text-neutral-100 focus-visible:outline-neutral-500',
+        colors: 'text-[color:var(--jbid-cancel-text)] hover:text-[color:var(--jbid-cancel-text-hover)] active:text-[color:var(--jbid-cancel-text-active)] focus-visible:outline-[color:var(--jbid-cancel-focus)]',
     };
-    return (index.h("button", { type: 'button', onClick: onClick, disabled: isLoading, "aria-label": text, "data-test-id": 'cancel-button', class: {
-            [classes.default]: true,
-            [classes.light]: !darkTheme,
-            [classes.dark]: darkTheme,
-        } }, isLoading ? (index.h(Spinner, { color: darkTheme ? white : primaryColor, classes: 'h-5 w-5' })) : (`${text}`)));
+    return (h("button", { type: 'button', onClick: onClick, disabled: isLoading, "aria-label": text, "data-test-id": 'cancel-button', class: `${classes.default} ${classes.colors}` }, isLoading ? (h(Spinner, { classes: 'h-5 w-5' })) : (`${text}`)));
 };
 const Alert = ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkTheme, }) => {
-    const alertClasses = {
-        dark: 'bg-neutral-800 text-neutral-100',
-        light: type === 'error'
-            ? 'bg-red-50 text-red-800'
-            : 'bg-primary-50 text-primary-800',
-    };
-    const badgeClasses = {
-        dark: type === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-primary-500/20 text-primary-300',
-        light: type === 'error' ? 'bg-red-100 text-red-600' : 'bg-primary-100 text-primary-700',
-    };
+    // Colors from the --jbid-* variables in jgroup-bank-id.css, per message type.
+    const alertClasses = type === 'error'
+        ? 'bg-[color:var(--jbid-error-background)] text-[color:var(--jbid-error-text)]'
+        : 'bg-[color:var(--jbid-info-background)] text-[color:var(--jbid-info-text)]';
+    const badgeClasses = type === 'error'
+        ? 'bg-[color:var(--jbid-error-icon-background)] text-[color:var(--jbid-error-icon)]'
+        : 'bg-[color:var(--jbid-info-icon-background)] text-[color:var(--jbid-info-icon)]';
     const tryAgainButtonClasses = {
-        default: 'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150',
-        dark: 'bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white',
-        light: 'bg-white hover:bg-red-100 active:bg-red-200 text-red-800 shadow-sm',
+        default: 'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150 bg-[color:var(--jbid-retry-background)] hover:bg-[color:var(--jbid-retry-background-hover)] active:bg-[color:var(--jbid-retry-background-active)] text-[color:var(--jbid-retry-text)]',
+        // The light scheme's white button sits on a tinted alert and needs the
+        // lift; the dark one is its own lighter grey already.
+        light: 'shadow-sm',
     };
-    return (index.h("div", { "data-test-id": 'alert', "data-test-type": type, 
+    return (h("div", { "data-test-id": 'alert', "data-test-type": type, 
         // This message appears/changes as the BankID flow progresses
         // (a hint code updating, a failure occurring) without any focus
         // move - role='alert' (assertive, interrupting) for a real error,
         // the softer aria-live='polite' for a routine info-type status,
         // so a screen reader user hears either without needing to
         // rediscover this element themselves.
-        role: type === 'error' ? 'alert' : undefined, "aria-live": type === 'error' ? 'assertive' : 'polite', class: {
-            'rounded-xl p-4 mb-4 animate-fade flex items-start gap-3': true,
-            [darkTheme ? alertClasses.dark : alertClasses.light]: true,
-        } },
-        index.h("div", { class: {
-                'flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center': true,
-                [darkTheme ? badgeClasses.dark : badgeClasses.light]: true,
-            } }, type === 'error' ? (index.h("svg", { class: 'h-5 w-5', viewBox: '0 0 20 20', fill: 'currentColor', "aria-hidden": 'true' },
-            index.h("path", { "fill-rule": 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z', "clip-rule": 'evenodd' }))) : (index.h("svg", { class: 'h-5 w-5', viewBox: '0 0 20 20', fill: 'currentColor', "aria-hidden": 'true' },
-            index.h("path", { "fill-rule": 'evenodd', d: 'M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z', "clip-rule": 'evenodd' })))),
-        index.h("div", { class: 'pt-2' },
-            index.h("p", { class: 'text-sm leading-relaxed' }, message),
-            type === 'error' ? (index.h("div", { class: 'mt-3' },
-                index.h("button", { type: 'button', onClick: onTryAgainButtonClick, "data-test-id": 'try-again-button', class: {
-                        [tryAgainButtonClasses.default]: true,
-                        [tryAgainButtonClasses.light]: !darkTheme,
-                        [tryAgainButtonClasses.dark]: darkTheme,
-                    } }, tryAgainButtonText))) : (''))));
+        role: type === 'error' ? 'alert' : undefined, "aria-live": type === 'error' ? 'assertive' : 'polite', class: `rounded-xl p-4 mb-4 animate-fade flex items-start gap-3 ${alertClasses}` },
+        h("div", { class: `flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${badgeClasses}` }, type === 'error' ? (h("svg", { class: 'h-5 w-5', viewBox: '0 0 20 20', fill: 'currentColor', "aria-hidden": 'true' },
+            h("path", { "fill-rule": 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z', "clip-rule": 'evenodd' }))) : (h("svg", { class: 'h-5 w-5', viewBox: '0 0 20 20', fill: 'currentColor', "aria-hidden": 'true' },
+            h("path", { "fill-rule": 'evenodd', d: 'M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z', "clip-rule": 'evenodd' })))),
+        h("div", { class: 'pt-2' },
+            h("p", { class: 'text-sm leading-relaxed' }, message),
+            type === 'error' ? (h("div", { class: 'mt-3' },
+                h("button", { type: 'button', onClick: onTryAgainButtonClick, "data-test-id": 'try-again-button', class: `${tryAgainButtonClasses.default} ${darkTheme ? '' : tryAgainButtonClasses.light}` }, tryAgainButtonText))) : (''))));
 };
-const Spinner = ({ color, classes, }) => (index.h("svg", { width: '32px', height: '32px', class: classes, fill: color, viewBox: '0 0 24 24', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
-    index.h("path", { d: 'M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity: '.25' }),
-    index.h("path", { d: 'M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z', class: 'spinner' })));
-const BankIdLogo = ({ color, size = 32 }) => (index.h("svg", { width: `${size}px`, height: `${size}px`, viewBox: '0 0 39 39', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
-    index.h("g", { stroke: 'none', "stroke-width": '1', fill: 'none', "fill-rule": 'evenodd' },
-        index.h("rect", { fill: 'none', x: '0', y: '0', width: '39', height: '39' }),
-        index.h("g", { transform: 'translate(5, 5)', fill: color },
-            index.h("path", { d: 'M8.81437126,14.9123726 L10,6.95488054 C9.53293413,6.95488054 8.73353293,6.95488054 8.73353293,6.95488054 C8.14071856,6.95488054 7.37724551,6.60100169 7.15269461,5.95062974 C7.08083832,5.730651 6.91017964,4.97507182 7.88922156,4.23862124 C8.23952096,3.98038532 8.46407186,3.69345652 8.50898204,3.47347778 C8.55389222,3.24393474 8.5,3.04308458 8.34730539,2.89005588 C8.13173653,2.67007714 7.70958084,2.54574132 7.17065868,2.54574132 C6.26347305,2.54574132 5.6257485,3.10047034 5.56287425,3.50217066 C5.51796407,3.79866375 5.73353293,4.03777108 5.92215569,4.19079977 C6.48802395,4.64032156 6.62275449,5.2906935 6.27245509,5.90280827 C5.91317365,6.53405163 5.13173653,6.94531625 4.29640719,6.95488054 C4.29640719,6.95488054 3.47005988,6.95488054 3.00299401,6.95488054 C2.89520958,7.7295883 1.13473054,19.6084406 1,20.5457413 L8.01497006,20.5457413 C8.07784431,20.1249124 8.4011976,17.8773035 8.84131737,14.9123726 L8.81437126,14.9123726 Z', fill: color }),
-            index.h("path", { d: 'M19.0401903,0.545741325 L11.9459047,0.545741325 L11,6.80620644 L12.20469,6.80620644 C12.8650386,6.80620644 13.4896927,6.48992737 13.7574016,6.03411342 C13.8466379,5.88527621 13.8823324,5.75504365 13.8823324,5.63411342 C13.8823324,5.3736483 13.7127834,5.17829946 13.5432344,5.04806691 C13.0792057,4.68527621 12.9810458,4.30388086 12.9810458,4.03411342 C12.9810458,3.97829946 12.9810458,3.93178784 12.9899694,3.88527621 C13.0881293,3.22481109 13.9447978,2.50853202 15.0780987,2.50853202 C15.7562946,2.50853202 16.2738651,2.67597388 16.5861921,2.98295063 C16.8628247,3.25271807 16.9699082,3.63411342 16.8895956,4.03411342 C16.7914356,4.50853202 16.3363305,4.8992297 16.0775453,5.09457853 C15.3904258,5.59690412 15.4796621,6.03411342 15.5242802,6.16434598 C15.6670583,6.55504365 16.2113997,6.80620644 16.6308103,6.80620644 L18.4601544,6.80620644 C18.4601544,6.80620644 18.4601544,6.80620644 18.4601544,6.81550877 C20.9587707,6.83411342 22.2973151,8.03411342 21.8779045,10.8248111 C21.4852648,13.4201599 19.5756081,14.536439 17.3000825,14.5550437 L16.3987959,20.5457413 L17.7284167,20.5457413 C23.3413798,20.5457413 27.9281254,16.7876018 28.829412,10.8527181 C29.9448657,3.48527621 25.4652036,0.545741325 19.0401903,0.545741325 Z', fill: color }),
-            index.h("path", { d: 'M19.0401903,0.545741325 L11.9459047,0.545741325 L11,6.80620644 L12.20469,6.80620644 C12.8650386,6.80620644 13.4896927,6.48992737 13.7574016,6.03411342 C13.8466379,5.88527621 13.8823324,5.75504365 13.8823324,5.63411342 C13.8823324,5.3736483 13.7127834,5.17829946 13.5432344,5.04806691 C13.0792057,4.68527621 12.9810458,4.30388086 12.9810458,4.03411342 C12.9810458,3.97829946 12.9810458,3.93178784 12.9899694,3.88527621 C13.0881293,3.22481109 13.9447978,2.50853202 15.0780987,2.50853202 C15.7562946,2.50853202 16.2738651,2.67597388 16.5861921,2.98295063 C16.8628247,3.25271807 16.9699082,3.63411342 16.8895956,4.03411342 C16.7914356,4.50853202 16.3363305,4.8992297 16.0775453,5.09457853 C15.3904258,5.59690412 15.4796621,6.03411342 15.5242802,6.16434598 C15.6670583,6.55504365 16.2113997,6.80620644 16.6308103,6.80620644 L18.4601544,6.80620644 C18.4601544,6.80620644 18.4601544,6.80620644 18.4601544,6.81550877 C20.9587707,6.83411342 22.2973151,8.03411342 21.8779045,10.8248111 C21.4852648,13.4201599 19.5756081,14.536439 17.3000825,14.5550437 L16.3987959,20.5457413 L17.7284167,20.5457413 C23.3413798,20.5457413 27.9281254,16.7876018 28.829412,10.8527181 C29.9448657,3.48527621 25.4652036,0.545741325 19.0401903,0.545741325 Z', fill: color }),
-            index.h("g", { transform: 'translate(0, 22.545741)', fill: color },
-                index.h("path", { d: 'M0.790909091,0.0178571429 L3.69090909,0.0178571429 C4.92727273,0.0178571429 5.22727273,0.633928571 5.13636364,1.19642857 C5.06363636,1.65178571 4.74545455,1.99107143 4.2,2.21428571 C4.89090909,2.47321429 5.16363636,2.875 5.06363636,3.50892857 C4.93636364,4.30357143 4.23636364,4.89285714 3.31818182,4.89285714 L0.0181818182,4.89285714 L0.790909091,0.0178571429 Z M2.70909091,2.03571429 C3.27272727,2.03571429 3.53636364,1.74107143 3.59090909,1.39285714 C3.64545455,1.01785714 3.47272727,0.758928571 2.90909091,0.758928571 L2.40909091,0.758928571 L2.20909091,2.03571429 L2.70909091,2.03571429 L2.70909091,2.03571429 Z M2.4,4.14285714 C2.98181818,4.14285714 3.31818182,3.91071429 3.4,3.4375 C3.46363636,3.02678571 3.22727273,2.78571429 2.66363636,2.78571429 L2.09090909,2.78571429 L1.87272727,4.15178571 L2.4,4.15178571 L2.4,4.14285714 Z' }),
-                index.h("path", { d: 'M9.12727273,4.92857143 C8.37272727,4.98214286 8.00909091,4.90178571 7.82727273,4.58035714 C7.42727273,4.82142857 6.98181818,4.94642857 6.50909091,4.94642857 C5.65454545,4.94642857 5.35454545,4.50892857 5.43636364,4.02678571 C5.47272727,3.79464286 5.60909091,3.57142857 5.82727273,3.38392857 C6.3,2.98214286 7.46363636,2.92857143 7.91818182,2.625 C7.95454545,2.28571429 7.81818182,2.16071429 7.39090909,2.16071429 C6.89090909,2.16071429 6.47272727,2.32142857 5.75454545,2.80357143 L5.92727273,1.69642857 C6.54545455,1.25892857 7.14545455,1.05357143 7.83636364,1.05357143 C8.71818182,1.05357143 9.5,1.41071429 9.35454545,2.35714286 L9.18181818,3.42857143 C9.11818182,3.80357143 9.13636364,3.91964286 9.56363636,3.92857143 L9.12727273,4.92857143 Z M7.81818182,3.25 C7.41818182,3.5 6.67272727,3.45535714 6.59090909,3.97321429 C6.55454545,4.21428571 6.70909091,4.39285714 6.95454545,4.39285714 C7.19090909,4.39285714 7.48181818,4.29464286 7.71818182,4.13392857 C7.7,4.04464286 7.70909091,3.95535714 7.73636364,3.78571429 L7.81818182,3.25 Z' }),
-                index.h("path", { d: 'M10.5363636,1.11607143 L12.0454545,1.11607143 L11.9636364,1.60714286 C12.4454545,1.20535714 12.8090909,1.05357143 13.2818182,1.05357143 C14.1272727,1.05357143 14.5181818,1.5625 14.3818182,2.39285714 L13.9909091,4.88392857 L12.4818182,4.88392857 L12.8090909,2.82142857 C12.8727273,2.44642857 12.7545455,2.26785714 12.4636364,2.26785714 C12.2272727,2.26785714 12.0090909,2.39285714 11.8,2.66964286 L11.4545455,4.875 L9.94545455,4.875 L10.5363636,1.11607143 Z' }),
-                index.h("polygon", { points: '15.5545455 0.0178571429 17.0636364 0.0178571429 16.6818182 2.41071429 18.1272727 1.11607143 19.9909091 1.11607143 18.1363636 2.72321429 19.6272727 4.88392857 17.7272727 4.88392857 16.5818182 3.14285714 16.5636364 3.14285714 16.2909091 4.88392857 14.7818182 4.88392857' })),
-            index.h("g", { transform: 'translate(20, 22.545741)', fill: color },
-                index.h("polygon", { points: '0.782417582 0.0181818182 2.46153846 0.0181818182 1.72307692 4.97272727 0.043956044 4.97272727' }),
-                index.h("path", { d: 'M3.27912088,0.0181818182 L5.67912088,0.0181818182 C7.53406593,0.0181818182 8.07032967,1.40909091 7.89450549,2.56363636 C7.72747253,3.69090909 6.86593407,4.97272727 5.23956044,4.97272727 L2.53186813,4.97272727 L3.27912088,0.0181818182 Z M4.83516484,3.79090909 C5.65274725,3.79090909 6.1010989,3.37272727 6.23296703,2.49090909 C6.32967033,1.83636364 6.13626374,1.19090909 5.23076923,1.19090909 L4.78241758,1.19090909 L4.3956044,3.79090909 L4.83516484,3.79090909 L4.83516484,3.79090909 Z' }))))));
+// fill as a style, not the attribute: a presentation attribute can't read
+// a CSS variable, a style can.
+const Spinner = ({ classes, }) => (h("svg", { width: '32px', height: '32px', class: classes, style: { fill: 'var(--jbid-spinner)' }, viewBox: '0 0 24 24', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
+    h("path", { d: 'M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity: '.25' }),
+    h("path", { d: 'M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z', class: 'spinner' })));
+const BankIdLogo = ({ color, size = 32 }) => (h("svg", { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size, 
+    // Cropped to the mark itself (x 5-35, y 5.5-32.5 of the original 39x39
+    // canvas) plus half a unit, so the size given is the mark's own and not
+    // mostly empty canvas - in the badge, the white around it is the badge's.
+    viewBox: '4.5 5 31 28', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
+    h("g", { stroke: 'none', "stroke-width": '1', fill: 'none', "fill-rule": 'evenodd' },
+        h("rect", { fill: 'none', x: '0', y: '0', width: '39', height: '39' }),
+        h("g", { transform: 'translate(5, 5)', fill: color },
+            h("path", { d: 'M8.81437126,14.9123726 L10,6.95488054 C9.53293413,6.95488054 8.73353293,6.95488054 8.73353293,6.95488054 C8.14071856,6.95488054 7.37724551,6.60100169 7.15269461,5.95062974 C7.08083832,5.730651 6.91017964,4.97507182 7.88922156,4.23862124 C8.23952096,3.98038532 8.46407186,3.69345652 8.50898204,3.47347778 C8.55389222,3.24393474 8.5,3.04308458 8.34730539,2.89005588 C8.13173653,2.67007714 7.70958084,2.54574132 7.17065868,2.54574132 C6.26347305,2.54574132 5.6257485,3.10047034 5.56287425,3.50217066 C5.51796407,3.79866375 5.73353293,4.03777108 5.92215569,4.19079977 C6.48802395,4.64032156 6.62275449,5.2906935 6.27245509,5.90280827 C5.91317365,6.53405163 5.13173653,6.94531625 4.29640719,6.95488054 C4.29640719,6.95488054 3.47005988,6.95488054 3.00299401,6.95488054 C2.89520958,7.7295883 1.13473054,19.6084406 1,20.5457413 L8.01497006,20.5457413 C8.07784431,20.1249124 8.4011976,17.8773035 8.84131737,14.9123726 L8.81437126,14.9123726 Z', fill: color }),
+            h("path", { d: 'M19.0401903,0.545741325 L11.9459047,0.545741325 L11,6.80620644 L12.20469,6.80620644 C12.8650386,6.80620644 13.4896927,6.48992737 13.7574016,6.03411342 C13.8466379,5.88527621 13.8823324,5.75504365 13.8823324,5.63411342 C13.8823324,5.3736483 13.7127834,5.17829946 13.5432344,5.04806691 C13.0792057,4.68527621 12.9810458,4.30388086 12.9810458,4.03411342 C12.9810458,3.97829946 12.9810458,3.93178784 12.9899694,3.88527621 C13.0881293,3.22481109 13.9447978,2.50853202 15.0780987,2.50853202 C15.7562946,2.50853202 16.2738651,2.67597388 16.5861921,2.98295063 C16.8628247,3.25271807 16.9699082,3.63411342 16.8895956,4.03411342 C16.7914356,4.50853202 16.3363305,4.8992297 16.0775453,5.09457853 C15.3904258,5.59690412 15.4796621,6.03411342 15.5242802,6.16434598 C15.6670583,6.55504365 16.2113997,6.80620644 16.6308103,6.80620644 L18.4601544,6.80620644 C18.4601544,6.80620644 18.4601544,6.80620644 18.4601544,6.81550877 C20.9587707,6.83411342 22.2973151,8.03411342 21.8779045,10.8248111 C21.4852648,13.4201599 19.5756081,14.536439 17.3000825,14.5550437 L16.3987959,20.5457413 L17.7284167,20.5457413 C23.3413798,20.5457413 27.9281254,16.7876018 28.829412,10.8527181 C29.9448657,3.48527621 25.4652036,0.545741325 19.0401903,0.545741325 Z', fill: color }),
+            h("path", { d: 'M19.0401903,0.545741325 L11.9459047,0.545741325 L11,6.80620644 L12.20469,6.80620644 C12.8650386,6.80620644 13.4896927,6.48992737 13.7574016,6.03411342 C13.8466379,5.88527621 13.8823324,5.75504365 13.8823324,5.63411342 C13.8823324,5.3736483 13.7127834,5.17829946 13.5432344,5.04806691 C13.0792057,4.68527621 12.9810458,4.30388086 12.9810458,4.03411342 C12.9810458,3.97829946 12.9810458,3.93178784 12.9899694,3.88527621 C13.0881293,3.22481109 13.9447978,2.50853202 15.0780987,2.50853202 C15.7562946,2.50853202 16.2738651,2.67597388 16.5861921,2.98295063 C16.8628247,3.25271807 16.9699082,3.63411342 16.8895956,4.03411342 C16.7914356,4.50853202 16.3363305,4.8992297 16.0775453,5.09457853 C15.3904258,5.59690412 15.4796621,6.03411342 15.5242802,6.16434598 C15.6670583,6.55504365 16.2113997,6.80620644 16.6308103,6.80620644 L18.4601544,6.80620644 C18.4601544,6.80620644 18.4601544,6.80620644 18.4601544,6.81550877 C20.9587707,6.83411342 22.2973151,8.03411342 21.8779045,10.8248111 C21.4852648,13.4201599 19.5756081,14.536439 17.3000825,14.5550437 L16.3987959,20.5457413 L17.7284167,20.5457413 C23.3413798,20.5457413 27.9281254,16.7876018 28.829412,10.8527181 C29.9448657,3.48527621 25.4652036,0.545741325 19.0401903,0.545741325 Z', fill: color }),
+            h("g", { transform: 'translate(0, 22.545741)', fill: color },
+                h("path", { d: 'M0.790909091,0.0178571429 L3.69090909,0.0178571429 C4.92727273,0.0178571429 5.22727273,0.633928571 5.13636364,1.19642857 C5.06363636,1.65178571 4.74545455,1.99107143 4.2,2.21428571 C4.89090909,2.47321429 5.16363636,2.875 5.06363636,3.50892857 C4.93636364,4.30357143 4.23636364,4.89285714 3.31818182,4.89285714 L0.0181818182,4.89285714 L0.790909091,0.0178571429 Z M2.70909091,2.03571429 C3.27272727,2.03571429 3.53636364,1.74107143 3.59090909,1.39285714 C3.64545455,1.01785714 3.47272727,0.758928571 2.90909091,0.758928571 L2.40909091,0.758928571 L2.20909091,2.03571429 L2.70909091,2.03571429 L2.70909091,2.03571429 Z M2.4,4.14285714 C2.98181818,4.14285714 3.31818182,3.91071429 3.4,3.4375 C3.46363636,3.02678571 3.22727273,2.78571429 2.66363636,2.78571429 L2.09090909,2.78571429 L1.87272727,4.15178571 L2.4,4.15178571 L2.4,4.14285714 Z' }),
+                h("path", { d: 'M9.12727273,4.92857143 C8.37272727,4.98214286 8.00909091,4.90178571 7.82727273,4.58035714 C7.42727273,4.82142857 6.98181818,4.94642857 6.50909091,4.94642857 C5.65454545,4.94642857 5.35454545,4.50892857 5.43636364,4.02678571 C5.47272727,3.79464286 5.60909091,3.57142857 5.82727273,3.38392857 C6.3,2.98214286 7.46363636,2.92857143 7.91818182,2.625 C7.95454545,2.28571429 7.81818182,2.16071429 7.39090909,2.16071429 C6.89090909,2.16071429 6.47272727,2.32142857 5.75454545,2.80357143 L5.92727273,1.69642857 C6.54545455,1.25892857 7.14545455,1.05357143 7.83636364,1.05357143 C8.71818182,1.05357143 9.5,1.41071429 9.35454545,2.35714286 L9.18181818,3.42857143 C9.11818182,3.80357143 9.13636364,3.91964286 9.56363636,3.92857143 L9.12727273,4.92857143 Z M7.81818182,3.25 C7.41818182,3.5 6.67272727,3.45535714 6.59090909,3.97321429 C6.55454545,4.21428571 6.70909091,4.39285714 6.95454545,4.39285714 C7.19090909,4.39285714 7.48181818,4.29464286 7.71818182,4.13392857 C7.7,4.04464286 7.70909091,3.95535714 7.73636364,3.78571429 L7.81818182,3.25 Z' }),
+                h("path", { d: 'M10.5363636,1.11607143 L12.0454545,1.11607143 L11.9636364,1.60714286 C12.4454545,1.20535714 12.8090909,1.05357143 13.2818182,1.05357143 C14.1272727,1.05357143 14.5181818,1.5625 14.3818182,2.39285714 L13.9909091,4.88392857 L12.4818182,4.88392857 L12.8090909,2.82142857 C12.8727273,2.44642857 12.7545455,2.26785714 12.4636364,2.26785714 C12.2272727,2.26785714 12.0090909,2.39285714 11.8,2.66964286 L11.4545455,4.875 L9.94545455,4.875 L10.5363636,1.11607143 Z' }),
+                h("polygon", { points: '15.5545455 0.0178571429 17.0636364 0.0178571429 16.6818182 2.41071429 18.1272727 1.11607143 19.9909091 1.11607143 18.1363636 2.72321429 19.6272727 4.88392857 17.7272727 4.88392857 16.5818182 3.14285714 16.5636364 3.14285714 16.2909091 4.88392857 14.7818182 4.88392857' })),
+            h("g", { transform: 'translate(20, 22.545741)', fill: color },
+                h("polygon", { points: '0.782417582 0.0181818182 2.46153846 0.0181818182 1.72307692 4.97272727 0.043956044 4.97272727' }),
+                h("path", { d: 'M3.27912088,0.0181818182 L5.67912088,0.0181818182 C7.53406593,0.0181818182 8.07032967,1.40909091 7.89450549,2.56363636 C7.72747253,3.69090909 6.86593407,4.97272727 5.23956044,4.97272727 L2.53186813,4.97272727 L3.27912088,0.0181818182 Z M4.83516484,3.79090909 C5.65274725,3.79090909 6.1010989,3.37272727 6.23296703,2.49090909 C6.32967033,1.83636364 6.13626374,1.19090909 5.23076923,1.19090909 L4.78241758,1.19090909 L4.3956044,3.79090909 L4.83516484,3.79090909 L4.83516484,3.79090909 Z' }))))));
 
-exports.Alert = Alert;
-exports.CancelButton = CancelButton;
-exports.StartButton = StartButton;
-exports.registerInterFont = registerInterFont;
+export { Alert as A, CancelButton as C, StartButton as S, registerInterFont as r };
 
-//# sourceMappingURL=components-6bf4f6b6.js.map
+//# sourceMappingURL=components-16aba6cb.js.map

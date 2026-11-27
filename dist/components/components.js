@@ -4611,9 +4611,10 @@ const tailwindConfig = {
 };
 
 const fullConfig = resolveConfig_1(tailwindConfig);
+// The BankID logo's own blue, fixed per BankID's brand guidelines - every
+// other color comes from the --jbid-* variables in jgroup-bank-id.css.
 const primaryColor = fullConfig.theme.colors.primary['900'];
-const white = fullConfig.theme.colors.white;
-const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded, }) => {
+const StartButton = ({ onClick, isLoading, text, isOutlined, block = false, rounded, }) => {
     const classes = {
         // No disabled:opacity-50 here deliberately - this button is only ever
         // disabled while isLoading (there's no other disabled state), so the
@@ -4628,7 +4629,12 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
         // primary button sits directly in a grid cell (stretches on its own),
         // but the secondary one sits inside its own wrapper div one level in,
         // which needs the button itself told to fill it explicitly.
-        default: 'relative w-full inline-flex items-center gap-x-3 text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+        // The shadows are Tailwind's shadow-sm and shadow-md, overridable with
+        // --jgroup-bankid-button-shadow(-hover), e.g. `none` for an app whose
+        // own buttons are flat. (Underscores are spaces in a Tailwind value.)
+        // --jgroup-bankid-font-size sets the label; the line stays 20px, which
+        // the heights below count on.
+        default: 'relative w-full inline-flex items-center gap-x-3 text-[length:var(--jgroup-bankid-font-size,0.875rem)] leading-5 font-semibold shadow-[var(--jgroup-bankid-button-shadow,0_1px_2px_0_rgb(0_0_0/0.05))] hover:shadow-[var(--jgroup-bankid-button-shadow-hover,0_4px_6px_-1px_rgb(0_0_0/0.1),0_2px_4px_-2px_rgb(0_0_0/0.1))] transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-[var(--jgroup-bankid-button-shadow,0_1px_2px_0_rgb(0_0_0/0.05))]',
         // A modest min-width (not the old fixed-wide one) keeps the button from
         // visibly shrinking when its text is swapped for the loading spinner,
         // without leaving a slab of dead space next to short text. The avatar
@@ -4646,28 +4652,31 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
         // exactly that difference - invisible if the gap ends up wide enough
         // on every side, but visibly lopsided otherwise, which is what was
         // actually happening.
-        withIcon: 'min-w-[12rem] pl-2 pr-5 py-2',
-        // Same min-width as withIcon, and py-4 lands at the same ~52px total
-        // height (py-2 + the 36px avatar there vs py-4 + text-sm's own 20px
-        // line-height here) - same button, just without the avatar.
-        textOnly: 'justify-center min-w-[12rem] px-5 py-4',
-        // Matches the "light" variant below exactly (white bg, grey border,
-        // same hover/active, same themeable accent text) - this is the same
-        // button language, just without the avatar badge, not a different
-        // style.
-        outlinedLight: 'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
-        outlinedDark: 'bg-transparent focus-visible:bg-neutral-600 focus-visible:outline-neutral-500 hover:bg-neutral-700 active:border-neutral-400 active:bg-neutral-600 text-gray-200 border border-neutral-700',
-        // Themeable via the --jgroup-bankid-accent custom property, set by a
-        // consuming app on the element itself or an ancestor (crosses the
-        // shadow boundary - custom properties are inherited CSS, unlike
-        // ordinary selectors) - e.g. `jgroup-bank-id { --jgroup-bankid-accent:
-        // #a16cf0 }`. Falls back to this package's own teal when unset, so
-        // every existing consumer is unaffected. hover/active are derived with
-        // color-mix() rather than needing three separate variables from the
-        // consumer - only the avatar badge (BankID's own logo) stays fixed,
-        // per BankID's brand guidelines, regardless of this.
-        light: 'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
-        dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
+        //
+        // Both are worked out from --jgroup-bankid-button-height and
+        // --jgroup-bankid-badge-size, so that an app sets the height it wants
+        // and the badge sits concentric in it: (height - badge - the 2px of
+        // border) / 2. Unset, that is 54px and 36px, i.e. py-2 and pl-2.
+        withIcon: 'min-w-[12rem] pl-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)] pr-5 py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)]',
+        // With block, the right padding matches the badge side (inset + badge
+        // + the gap-x-3), so the label is centered on the whole button.
+        withIconBlock: 'min-w-[12rem] pl-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)] pr-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2_+_var(--jgroup-bankid-badge-size,2.25rem)_+_0.75rem)] py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)]',
+        // Same min-width and height as withIcon - the same button, just without
+        // the avatar: (height - the label's 20px line - 2px of border) / 2,
+        // py-4 unset.
+        textOnly: 'justify-center min-w-[12rem] px-5 py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_1.25rem_-_2px)/2)]',
+        // Both schemes, light and dark, and anything a consuming app sets, come
+        // from the --jbid-* variables in jgroup-bank-id.css - one set for the
+        // primary button (with the badge) and one for the outlined secondary
+        // one, so the markup no longer picks classes per scheme.
+        primary: 'bg-[color:var(--jbid-button-background)] hover:bg-[color:var(--jbid-button-background-hover)] active:bg-[color:var(--jbid-button-background-active)] focus-visible:bg-[color:var(--jbid-button-background-focus)] border border-[color:var(--jbid-button-border)] active:border-[color:var(--jbid-button-border-active)] text-[color:var(--jbid-button-text)] focus-visible:outline-[color:var(--jbid-focus)]',
+        secondary: 'bg-[color:var(--jbid-secondary-background)] hover:bg-[color:var(--jbid-secondary-background-hover)] active:bg-[color:var(--jbid-secondary-background-active)] focus-visible:bg-[color:var(--jbid-secondary-background-focus)] border border-[color:var(--jbid-secondary-border)] active:border-[color:var(--jbid-secondary-border-active)] text-[color:var(--jbid-secondary-text)] focus-visible:outline-[color:var(--jbid-focus)]',
+        // --jgroup-bankid-button-radius overrides the rounded prop's corners,
+        // for an app whose own buttons have some other radius.
+        corners: {
+            full: 'rounded-[var(--jgroup-bankid-button-radius,9999px)]',
+            md: 'rounded-[var(--jgroup-bankid-button-radius,0.75rem)]',
+        },
     };
     return (h("button", { type: 'button', disabled: isLoading, onClick: onClick, "aria-label": text, "data-test-id": 'start-button', "data-test-loading": isLoading, 
         // A plain template string, not the {[classString]: condition} map
@@ -4677,15 +4686,12 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
         // one identical string silently collide (the later object key wins,
         // dropping the earlier condition's class entirely - confirmed: this
         // is exactly how the outlined button lost its border).
-        class: `${classes.default} ${rounded === 'full' ? 'rounded-full' : 'rounded-xl'} ${isOutlined ? classes.textOnly : classes.withIcon} ${isOutlined
-            ? darkTheme
-                ? classes.outlinedDark
-                : classes.outlinedLight
-            : darkTheme
-                ? classes.dark
-                : classes.light}` },
-        !isOutlined ? (h("span", { class: `flex-shrink-0 h-9 w-9 ${rounded === 'full' ? 'rounded-full' : 'rounded-lg'} bg-white border border-black/10 shadow flex items-center justify-center` },
-            h(BankIdLogo, { color: primaryColor, size: 26 }))) : (''),
+        class: `${classes.default} ${classes.corners[rounded]} ${isOutlined ? classes.textOnly : block ? classes.withIconBlock : classes.withIcon} ${isOutlined ? classes.secondary : classes.primary}` },
+        !isOutlined ? (h("span", { class: `flex-shrink-0 h-[var(--jgroup-bankid-badge-size,2.25rem)] w-[var(--jgroup-bankid-badge-size,2.25rem)] ${rounded === 'full' ? 'rounded-[var(--jgroup-bankid-badge-radius,9999px)]' : 'rounded-[var(--jgroup-bankid-badge-radius,0.5rem)]'} bg-white border border-black/10 shadow flex items-center justify-center` },
+            h(BankIdLogo, { color: primaryColor, 
+                // The mark's share of the badge, whatever size the badge is; the
+                // rest is the badge's own white clear space around it.
+                size: '76%' }))) : (''),
         !isLoading ? (h("span", { class: 'flex-grow text-center' }, text)) : (h("span", { class: 'flex-grow flex items-center justify-center' },
             h(Spinner
             // Measured identical to the avatar's own 36px (h-9 w-9)
@@ -4701,14 +4707,9 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, darkTheme, rounded,
                 // visual mass than the avatar's thin logo lines inside a soft
                 // white badge, even at the exact same bounding box. Sized down
                 // to balance that, not to literally match the pixel count.
-                classes: 'h-7 w-7', 
-                // The non-outlined "light" variant is a white-bg bordered
-                // button now (not a solid dark fill like before) - its own
-                // background is only ever dark when darkTheme is on, same as
-                // the outlined variants already were.
-                color: darkTheme ? white : primaryColor })))));
+                classes: 'h-[calc(var(--jgroup-bankid-badge-size,2.25rem)_*_0.78)] w-[calc(var(--jgroup-bankid-badge-size,2.25rem)_*_0.78)]' })))));
 };
-const CancelButton = ({ onClick, text, isLoading, darkTheme, }) => {
+const CancelButton = ({ onClick, text, isLoading, }) => {
     const classes = {
         // No hover:shadow or background fill - this is a plain text action, de-
         // emphasized below even the outlined secondary button, so a pill-shaped
@@ -4716,30 +4717,23 @@ const CancelButton = ({ onClick, text, isLoading, darkTheme, }) => {
         // the word on hover read as an odd disconnected shape popping in rather
         // than a natural hover state. A color + underline change instead.
         default: 'inline-flex items-center justify-center rounded-full disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium hover:underline transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-        light: 'text-neutral-500 hover:text-neutral-700 active:text-neutral-800 focus-visible:outline-primary-700',
-        dark: 'text-neutral-400 hover:text-neutral-200 active:text-neutral-100 focus-visible:outline-neutral-500',
+        colors: 'text-[color:var(--jbid-cancel-text)] hover:text-[color:var(--jbid-cancel-text-hover)] active:text-[color:var(--jbid-cancel-text-active)] focus-visible:outline-[color:var(--jbid-cancel-focus)]',
     };
-    return (h("button", { type: 'button', onClick: onClick, disabled: isLoading, "aria-label": text, "data-test-id": 'cancel-button', class: {
-            [classes.default]: true,
-            [classes.light]: !darkTheme,
-            [classes.dark]: darkTheme,
-        } }, isLoading ? (h(Spinner, { color: darkTheme ? white : primaryColor, classes: 'h-5 w-5' })) : (`${text}`)));
+    return (h("button", { type: 'button', onClick: onClick, disabled: isLoading, "aria-label": text, "data-test-id": 'cancel-button', class: `${classes.default} ${classes.colors}` }, isLoading ? (h(Spinner, { classes: 'h-5 w-5' })) : (`${text}`)));
 };
 const Alert = ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkTheme, }) => {
-    const alertClasses = {
-        dark: 'bg-neutral-800 text-neutral-100',
-        light: type === 'error'
-            ? 'bg-red-50 text-red-800'
-            : 'bg-primary-50 text-primary-800',
-    };
-    const badgeClasses = {
-        dark: type === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-primary-500/20 text-primary-300',
-        light: type === 'error' ? 'bg-red-100 text-red-600' : 'bg-primary-100 text-primary-700',
-    };
+    // Colors from the --jbid-* variables in jgroup-bank-id.css, per message type.
+    const alertClasses = type === 'error'
+        ? 'bg-[color:var(--jbid-error-background)] text-[color:var(--jbid-error-text)]'
+        : 'bg-[color:var(--jbid-info-background)] text-[color:var(--jbid-info-text)]';
+    const badgeClasses = type === 'error'
+        ? 'bg-[color:var(--jbid-error-icon-background)] text-[color:var(--jbid-error-icon)]'
+        : 'bg-[color:var(--jbid-info-icon-background)] text-[color:var(--jbid-info-icon)]';
     const tryAgainButtonClasses = {
-        default: 'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150',
-        dark: 'bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white',
-        light: 'bg-white hover:bg-red-100 active:bg-red-200 text-red-800 shadow-sm',
+        default: 'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150 bg-[color:var(--jbid-retry-background)] hover:bg-[color:var(--jbid-retry-background-hover)] active:bg-[color:var(--jbid-retry-background-active)] text-[color:var(--jbid-retry-text)]',
+        // The light scheme's white button sits on a tinted alert and needs the
+        // lift; the dark one is its own lighter grey already.
+        light: 'shadow-sm',
     };
     return (h("div", { "data-test-id": 'alert', "data-test-type": type, 
         // This message appears/changes as the BankID flow progresses
@@ -4748,29 +4742,25 @@ const Alert = ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkT
         // the softer aria-live='polite' for a routine info-type status,
         // so a screen reader user hears either without needing to
         // rediscover this element themselves.
-        role: type === 'error' ? 'alert' : undefined, "aria-live": type === 'error' ? 'assertive' : 'polite', class: {
-            'rounded-xl p-4 mb-4 animate-fade flex items-start gap-3': true,
-            [darkTheme ? alertClasses.dark : alertClasses.light]: true,
-        } },
-        h("div", { class: {
-                'flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center': true,
-                [darkTheme ? badgeClasses.dark : badgeClasses.light]: true,
-            } }, type === 'error' ? (h("svg", { class: 'h-5 w-5', viewBox: '0 0 20 20', fill: 'currentColor', "aria-hidden": 'true' },
+        role: type === 'error' ? 'alert' : undefined, "aria-live": type === 'error' ? 'assertive' : 'polite', class: `rounded-xl p-4 mb-4 animate-fade flex items-start gap-3 ${alertClasses}` },
+        h("div", { class: `flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${badgeClasses}` }, type === 'error' ? (h("svg", { class: 'h-5 w-5', viewBox: '0 0 20 20', fill: 'currentColor', "aria-hidden": 'true' },
             h("path", { "fill-rule": 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z', "clip-rule": 'evenodd' }))) : (h("svg", { class: 'h-5 w-5', viewBox: '0 0 20 20', fill: 'currentColor', "aria-hidden": 'true' },
             h("path", { "fill-rule": 'evenodd', d: 'M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z', "clip-rule": 'evenodd' })))),
         h("div", { class: 'pt-2' },
             h("p", { class: 'text-sm leading-relaxed' }, message),
             type === 'error' ? (h("div", { class: 'mt-3' },
-                h("button", { type: 'button', onClick: onTryAgainButtonClick, "data-test-id": 'try-again-button', class: {
-                        [tryAgainButtonClasses.default]: true,
-                        [tryAgainButtonClasses.light]: !darkTheme,
-                        [tryAgainButtonClasses.dark]: darkTheme,
-                    } }, tryAgainButtonText))) : (''))));
+                h("button", { type: 'button', onClick: onTryAgainButtonClick, "data-test-id": 'try-again-button', class: `${tryAgainButtonClasses.default} ${darkTheme ? '' : tryAgainButtonClasses.light}` }, tryAgainButtonText))) : (''))));
 };
-const Spinner = ({ color, classes, }) => (h("svg", { width: '32px', height: '32px', class: classes, fill: color, viewBox: '0 0 24 24', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
+// fill as a style, not the attribute: a presentation attribute can't read
+// a CSS variable, a style can.
+const Spinner = ({ classes, }) => (h("svg", { width: '32px', height: '32px', class: classes, style: { fill: 'var(--jbid-spinner)' }, viewBox: '0 0 24 24', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
     h("path", { d: 'M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity: '.25' }),
     h("path", { d: 'M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z', class: 'spinner' })));
-const BankIdLogo = ({ color, size = 32 }) => (h("svg", { width: `${size}px`, height: `${size}px`, viewBox: '0 0 39 39', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
+const BankIdLogo = ({ color, size = 32 }) => (h("svg", { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size, 
+    // Cropped to the mark itself (x 5-35, y 5.5-32.5 of the original 39x39
+    // canvas) plus half a unit, so the size given is the mark's own and not
+    // mostly empty canvas - in the badge, the white around it is the badge's.
+    viewBox: '4.5 5 31 28', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
     h("g", { stroke: 'none', "stroke-width": '1', fill: 'none', "fill-rule": 'evenodd' },
         h("rect", { fill: 'none', x: '0', y: '0', width: '39', height: '39' }),
         h("g", { transform: 'translate(5, 5)', fill: color },

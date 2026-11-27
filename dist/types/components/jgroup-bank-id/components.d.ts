@@ -4,7 +4,7 @@ interface StartButtonProps {
     isLoading: boolean;
     text: string;
     isOutlined: boolean;
-    darkTheme: boolean;
+    block?: boolean;
     rounded: 'full' | 'md';
 }
 export declare const StartButton: FunctionalComponent<StartButtonProps>;
@@ -12,7 +12,6 @@ interface CancelButtonProps {
     onClick: () => void;
     text: string;
     isLoading: boolean;
-    darkTheme: boolean;
 }
 export declare const CancelButton: FunctionalComponent<CancelButtonProps>;
 interface AlertProps {
@@ -24,13 +23,12 @@ interface AlertProps {
 }
 export declare const Alert: FunctionalComponent<AlertProps>;
 interface SpinnerProps {
-    color: string;
     classes: string;
 }
 export declare const Spinner: FunctionalComponent<SpinnerProps>;
 interface BankIdLogoProps {
     color: string;
-    size?: number;
+    size?: number | string;
 }
 export declare const BankIdLogo: FunctionalComponent<BankIdLogoProps>;
 export {};

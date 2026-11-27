@@ -16,6 +16,10 @@ export namespace Components {
          */
         "autoStartSingleOption": false;
         /**
+          * Stretches the start buttons to the full width of the container, like a consuming app's own full-width buttons, instead of the width of their text.
+         */
+        "block": false;
+        /**
           * Endpoint called to cancel an in-progress transaction.
          */
         "cancelUrl": string;
@@ -134,6 +138,10 @@ declare namespace LocalJSX {
           * Auto-starts the flow immediately on mount, skipping the start button - desktop (qr flow) only.
          */
         "autoStartSingleOption"?: false;
+        /**
+          * Stretches the start buttons to the full width of the container, like a consuming app's own full-width buttons, instead of the width of their text.
+         */
+        "block"?: false;
         /**
           * Endpoint called to cancel an in-progress transaction.
          */

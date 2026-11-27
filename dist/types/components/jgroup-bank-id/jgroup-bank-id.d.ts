@@ -24,6 +24,8 @@ export declare class JgroupBankId {
     readonly darkTheme = false;
     /** Corner style for the start button and its BankID badge: 'full' (the default) is a pill/circle, 'md' is still visibly rounded (rounded-xl/rounded-lg) but not a full pill/circle. */
     readonly rounded: 'full' | 'md';
+    /** Stretches the start buttons to the full width of the container, like a consuming app's own full-width buttons, instead of the width of their text. */
+    readonly block = false;
     /** UI language for all widget copy. */
     readonly language: 'sv' | 'en';
     /** Watchers for prop validation */

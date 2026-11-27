@@ -101,6 +101,67 @@ Same component, same two device flows, different pair of endpoints:
   `started` event's `detail.flowType` tells a consumer when it should
   show its own "continue in the BankID app..." indicator instead.
 
+### Theming
+
+Out of the box the widget has its own light and dark scheme (`dark-theme`).
+To make it look like the app it sits in, set any of these CSS custom
+properties on the element or an ancestor - they are inherited, so they
+reach inside the shadow root. Each one is optional; whatever is left unset
+keeps the built-in color for the current scheme. One value serves both
+schemes, so an app with its own dark mode points them at its own theme
+variables and the widget follows along:
+
+```css
+jgroup-bank-id,
+jgroup-bank-id-button {
+  --jgroup-bankid-button-background: rgba(var(--v-theme-primary), 0.12);
+  --jgroup-bankid-button-text: rgb(var(--v-theme-primary));
+  --jgroup-bankid-button-shadow: none;
+  --jgroup-bankid-button-radius: 8px;
+}
+```
+
+| Property | What it colors |
+| --- | --- |
+| `--jgroup-bankid-button-background`, `-hover`, `-active`, `-focus` | The start button (the one with the BankID badge) |
+| `--jgroup-bankid-button-border`, `--jgroup-bankid-button-border-active` | Its border |
+| `--jgroup-bankid-button-text` | Its label |
+| `--jgroup-bankid-secondary-background`, `-hover`, `-active`, `-focus` | The outlined "on another device" button (mobile) |
+| `--jgroup-bankid-secondary-border`, `--jgroup-bankid-secondary-border-active` | Its border |
+| `--jgroup-bankid-secondary-text` | Its label |
+| `--jgroup-bankid-focus` | Focus rings |
+| `--jgroup-bankid-spinner` | The loading spinners |
+| `--jgroup-bankid-button-shadow`, `--jgroup-bankid-button-shadow-hover` | The buttons' shadows (`none` for flat) |
+| `--jgroup-bankid-button-radius`, `--jgroup-bankid-badge-radius` | Corners, overriding `rounded` |
+| `--jgroup-bankid-button-height` | Both buttons' height (54px); the padding follows, so the badge stays centered |
+| `--jgroup-bankid-badge-size` | The BankID badge (36px); the logo and spinner scale with it |
+| `--jgroup-bankid-font-size` | The button labels (14px) |
+| `--jgroup-bankid-cancel-text`, `-hover`, `-active` | The cancel link |
+| `--jgroup-bankid-qr-background`, `--jgroup-bankid-qr-border` | The frame around the QR code |
+| `--jgroup-bankid-error-background`, `-text`, `-icon-background`, `-icon` | A failure message |
+| `--jgroup-bankid-info-background`, `-text`, `-icon-background`, `-icon` | A status message |
+| `--jgroup-bankid-retry-background`, `-hover`, `-active`, `-text` | The "try again" button in a failure |
+| `--jgroup-bankid-font-family` | The font (`inherit` for the app's own) |
+| `--jgroup-bankid-accent` | Older shorthand: the light scheme's text and focus color, when the specific ones above are unset |
+
+`-hover` etc. are suffixes on the property before them, e.g.
+`--jgroup-bankid-button-background-hover`. The BankID badge itself (the
+logo on white) never changes, per BankID's brand guidelines.
+
+`block` stretches the start buttons to the full width of the container,
+for a form whose other buttons are full width too, and centers the label
+on the whole button rather than on the space next to the badge.
+
+To match an app's own 44px buttons with 16px labels, for example:
+
+```css
+jgroup-bank-id {
+  --jgroup-bankid-button-height: 44px;
+  --jgroup-bankid-badge-size: 32px;
+  --jgroup-bankid-font-size: 1rem;
+}
+```
+
 ## Development
 
 ```bash

@@ -4,15 +4,19 @@ import tailwindConfig from './../../../tailwind.config.js';
 
 const fullConfig = resolveConfig(tailwindConfig);
 
+// The BankID logo's own blue, fixed per BankID's brand guidelines - every
+// other color comes from the --jbid-* variables in jgroup-bank-id.css.
 const primaryColor = fullConfig.theme.colors.primary['900'];
-const white = fullConfig.theme.colors.white;
 
 interface StartButtonProps {
   onClick: () => void;
   isLoading: boolean;
   text: string;
   isOutlined: boolean;
-  darkTheme: boolean;
+  // Stretched to the container's full width: the label is then centered on
+  // the whole button, like the other full-width buttons around it, rather
+  // than on the space next to the badge.
+  block?: boolean;
   // 'md' is still visibly rounded (rounded-xl/rounded-lg), just not a full
   // pill/circle - a boolean named `rounded` read as "square when off",
   // which isn't what this variant actually looks like.
@@ -24,7 +28,7 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
   isLoading,
   text,
   isOutlined,
-  darkTheme,
+  block = false,
   rounded,
 }) => {
   const classes = {
@@ -41,8 +45,13 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
     // primary button sits directly in a grid cell (stretches on its own),
     // but the secondary one sits inside its own wrapper div one level in,
     // which needs the button itself told to fill it explicitly.
+    // The shadows are Tailwind's shadow-sm and shadow-md, overridable with
+    // --jgroup-bankid-button-shadow(-hover), e.g. `none` for an app whose
+    // own buttons are flat. (Underscores are spaces in a Tailwind value.)
+    // --jgroup-bankid-font-size sets the label; the line stays 20px, which
+    // the heights below count on.
     default:
-      'relative w-full inline-flex items-center gap-x-3 text-sm font-semibold shadow-sm hover:shadow-md transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+      'relative w-full inline-flex items-center gap-x-3 text-[length:var(--jgroup-bankid-font-size,0.875rem)] leading-5 font-semibold shadow-[var(--jgroup-bankid-button-shadow,0_1px_2px_0_rgb(0_0_0/0.05))] hover:shadow-[var(--jgroup-bankid-button-shadow-hover,0_4px_6px_-1px_rgb(0_0_0/0.1),0_2px_4px_-2px_rgb(0_0_0/0.1))] transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:hover:shadow-[var(--jgroup-bankid-button-shadow,0_1px_2px_0_rgb(0_0_0/0.05))]',
     // A modest min-width (not the old fixed-wide one) keeps the button from
     // visibly shrinking when its text is swapped for the loading spinner,
     // without leaving a slab of dead space next to short text. The avatar
@@ -60,31 +69,33 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
     // exactly that difference - invisible if the gap ends up wide enough
     // on every side, but visibly lopsided otherwise, which is what was
     // actually happening.
-    withIcon: 'min-w-[12rem] pl-2 pr-5 py-2',
-    // Same min-width as withIcon, and py-4 lands at the same ~52px total
-    // height (py-2 + the 36px avatar there vs py-4 + text-sm's own 20px
-    // line-height here) - same button, just without the avatar.
-    textOnly: 'justify-center min-w-[12rem] px-5 py-4',
-    // Matches the "light" variant below exactly (white bg, grey border,
-    // same hover/active, same themeable accent text) - this is the same
-    // button language, just without the avatar badge, not a different
-    // style.
-    outlinedLight:
-      'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
-    outlinedDark:
-      'bg-transparent focus-visible:bg-neutral-600 focus-visible:outline-neutral-500 hover:bg-neutral-700 active:border-neutral-400 active:bg-neutral-600 text-gray-200 border border-neutral-700',
-    // Themeable via the --jgroup-bankid-accent custom property, set by a
-    // consuming app on the element itself or an ancestor (crosses the
-    // shadow boundary - custom properties are inherited CSS, unlike
-    // ordinary selectors) - e.g. `jgroup-bank-id { --jgroup-bankid-accent:
-    // #a16cf0 }`. Falls back to this package's own teal when unset, so
-    // every existing consumer is unaffected. hover/active are derived with
-    // color-mix() rather than needing three separate variables from the
-    // consumer - only the avatar badge (BankID's own logo) stays fixed,
-    // per BankID's brand guidelines, regardless of this.
-    light:
-      'bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-[var(--jgroup-bankid-accent,#1a3e4e)] text-[var(--jgroup-bankid-accent,#1a3e4e)]',
-    dark: 'bg-neutral-800 border border-neutral-700 active:border-neutral-400 hover:bg-neutral-700 active:bg-neutral-600 focus-visible:outline-neutral-500 focus-visible:bg-neutral-700 text-white',
+    //
+    // Both are worked out from --jgroup-bankid-button-height and
+    // --jgroup-bankid-badge-size, so that an app sets the height it wants
+    // and the badge sits concentric in it: (height - badge - the 2px of
+    // border) / 2. Unset, that is 54px and 36px, i.e. py-2 and pl-2.
+    withIcon: 'min-w-[12rem] pl-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)] pr-5 py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)]',
+    // With block, the right padding matches the badge side (inset + badge
+    // + the gap-x-3), so the label is centered on the whole button.
+    withIconBlock: 'min-w-[12rem] pl-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)] pr-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2_+_var(--jgroup-bankid-badge-size,2.25rem)_+_0.75rem)] py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_var(--jgroup-bankid-badge-size,2.25rem)_-_2px)/2)]',
+    // Same min-width and height as withIcon - the same button, just without
+    // the avatar: (height - the label's 20px line - 2px of border) / 2,
+    // py-4 unset.
+    textOnly: 'justify-center min-w-[12rem] px-5 py-[calc((var(--jgroup-bankid-button-height,3.375rem)_-_1.25rem_-_2px)/2)]',
+    // Both schemes, light and dark, and anything a consuming app sets, come
+    // from the --jbid-* variables in jgroup-bank-id.css - one set for the
+    // primary button (with the badge) and one for the outlined secondary
+    // one, so the markup no longer picks classes per scheme.
+    primary:
+      'bg-[color:var(--jbid-button-background)] hover:bg-[color:var(--jbid-button-background-hover)] active:bg-[color:var(--jbid-button-background-active)] focus-visible:bg-[color:var(--jbid-button-background-focus)] border border-[color:var(--jbid-button-border)] active:border-[color:var(--jbid-button-border-active)] text-[color:var(--jbid-button-text)] focus-visible:outline-[color:var(--jbid-focus)]',
+    secondary:
+      'bg-[color:var(--jbid-secondary-background)] hover:bg-[color:var(--jbid-secondary-background-hover)] active:bg-[color:var(--jbid-secondary-background-active)] focus-visible:bg-[color:var(--jbid-secondary-background-focus)] border border-[color:var(--jbid-secondary-border)] active:border-[color:var(--jbid-secondary-border-active)] text-[color:var(--jbid-secondary-text)] focus-visible:outline-[color:var(--jbid-focus)]',
+    // --jgroup-bankid-button-radius overrides the rounded prop's corners,
+    // for an app whose own buttons have some other radius.
+    corners: {
+      full: 'rounded-[var(--jgroup-bankid-button-radius,9999px)]',
+      md: 'rounded-[var(--jgroup-bankid-button-radius,0.75rem)]',
+    },
   };
   return (
     <button
@@ -107,15 +118,7 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
       // one identical string silently collide (the later object key wins,
       // dropping the earlier condition's class entirely - confirmed: this
       // is exactly how the outlined button lost its border).
-      class={`${classes.default} ${rounded === 'full' ? 'rounded-full' : 'rounded-xl'} ${isOutlined ? classes.textOnly : classes.withIcon} ${
-        isOutlined
-          ? darkTheme
-            ? classes.outlinedDark
-            : classes.outlinedLight
-          : darkTheme
-            ? classes.dark
-            : classes.light
-      }`}
+      class={`${classes.default} ${classes.corners[rounded]} ${isOutlined ? classes.textOnly : block ? classes.withIconBlock : classes.withIcon} ${isOutlined ? classes.secondary : classes.primary}`}
     >
       {/* Avatar first, label/spinner last - the avatar stays visible across
           both idle and loading states (own width is constant) so only the
@@ -127,10 +130,11 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
           white logo in a button" guideline more literally - this one read
           better in practice, so kept.) */}
       {!isOutlined ? (
-        <span class={`flex-shrink-0 h-9 w-9 ${rounded === 'full' ? 'rounded-full' : 'rounded-lg'} bg-white border border-black/10 shadow flex items-center justify-center`}>
+        <span class={`flex-shrink-0 h-[var(--jgroup-bankid-badge-size,2.25rem)] w-[var(--jgroup-bankid-badge-size,2.25rem)] ${rounded === 'full' ? 'rounded-[var(--jgroup-bankid-badge-radius,9999px)]' : 'rounded-[var(--jgroup-bankid-badge-radius,0.5rem)]'} bg-white border border-black/10 shadow flex items-center justify-center`}>
           <BankIdLogo
             color={primaryColor}
-            size={26}
+            // 26px of the 36px badge, and the same share of any other size.
+            size='72%'
           />
         </span>
       ) : (
@@ -147,12 +151,7 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
             // visual mass than the avatar's thin logo lines inside a soft
             // white badge, even at the exact same bounding box. Sized down
             // to balance that, not to literally match the pixel count.
-            classes='h-7 w-7'
-            // The non-outlined "light" variant is a white-bg bordered
-            // button now (not a solid dark fill like before) - its own
-            // background is only ever dark when darkTheme is on, same as
-            // the outlined variants already were.
-            color={darkTheme ? white : primaryColor}
+            classes='h-[calc(var(--jgroup-bankid-badge-size,2.25rem)_*_0.78)] w-[calc(var(--jgroup-bankid-badge-size,2.25rem)_*_0.78)]'
           ></Spinner>
         </span>
       )}
@@ -164,14 +163,12 @@ interface CancelButtonProps {
   onClick: () => void;
   text: string;
   isLoading: boolean;
-  darkTheme: boolean;
 }
 
 export const CancelButton: FunctionalComponent<CancelButtonProps> = ({
   onClick,
   text,
   isLoading,
-  darkTheme,
 }) => {
   const classes = {
     // No hover:shadow or background fill - this is a plain text action, de-
@@ -181,8 +178,7 @@ export const CancelButton: FunctionalComponent<CancelButtonProps> = ({
     // than a natural hover state. A color + underline change instead.
     default:
       'inline-flex items-center justify-center rounded-full disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium hover:underline transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-    light: 'text-neutral-500 hover:text-neutral-700 active:text-neutral-800 focus-visible:outline-primary-700',
-    dark: 'text-neutral-400 hover:text-neutral-200 active:text-neutral-100 focus-visible:outline-neutral-500',
+    colors: 'text-[color:var(--jbid-cancel-text)] hover:text-[color:var(--jbid-cancel-text-hover)] active:text-[color:var(--jbid-cancel-text-active)] focus-visible:outline-[color:var(--jbid-cancel-focus)]',
   };
 
   return (
@@ -195,15 +191,10 @@ export const CancelButton: FunctionalComponent<CancelButtonProps> = ({
       // button with no accessible name at all otherwise.
       aria-label={text}
       data-test-id='cancel-button'
-      class={{
-        [classes.default]: true,
-        [classes.light]: !darkTheme,
-        [classes.dark]: darkTheme,
-      }}
+      class={`${classes.default} ${classes.colors}`}
     >
       {isLoading ? (
         <Spinner
-          color={darkTheme ? white : primaryColor}
           classes='h-5 w-5'
         ></Spinner>
       ) : (
@@ -228,24 +219,21 @@ export const Alert: FunctionalComponent<AlertProps> = ({
   tryAgainButtonText,
   darkTheme,
 }) => {
-  const alertClasses = {
-    dark: 'bg-neutral-800 text-neutral-100',
-    light:
-      type === 'error'
-        ? 'bg-red-50 text-red-800'
-        : 'bg-primary-50 text-primary-800',
-  };
+  // Colors from the --jbid-* variables in jgroup-bank-id.css, per message type.
+  const alertClasses = type === 'error'
+    ? 'bg-[color:var(--jbid-error-background)] text-[color:var(--jbid-error-text)]'
+    : 'bg-[color:var(--jbid-info-background)] text-[color:var(--jbid-info-text)]';
 
-  const badgeClasses = {
-    dark: type === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-primary-500/20 text-primary-300',
-    light: type === 'error' ? 'bg-red-100 text-red-600' : 'bg-primary-100 text-primary-700',
-  };
+  const badgeClasses = type === 'error'
+    ? 'bg-[color:var(--jbid-error-icon-background)] text-[color:var(--jbid-error-icon)]'
+    : 'bg-[color:var(--jbid-info-icon-background)] text-[color:var(--jbid-info-icon)]';
 
   const tryAgainButtonClasses = {
     default:
-      'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150',
-    dark: 'bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white',
-    light: 'bg-white hover:bg-red-100 active:bg-red-200 text-red-800 shadow-sm',
+      'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150 bg-[color:var(--jbid-retry-background)] hover:bg-[color:var(--jbid-retry-background-hover)] active:bg-[color:var(--jbid-retry-background-active)] text-[color:var(--jbid-retry-text)]',
+    // The light scheme's white button sits on a tinted alert and needs the
+    // lift; the dark one is its own lighter grey already.
+    light: 'shadow-sm',
   };
 
   return (
@@ -260,16 +248,10 @@ export const Alert: FunctionalComponent<AlertProps> = ({
       // rediscover this element themselves.
       role={type === 'error' ? 'alert' : undefined}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
-      class={{
-        'rounded-xl p-4 mb-4 animate-fade flex items-start gap-3': true,
-        [darkTheme ? alertClasses.dark : alertClasses.light]: true,
-      }}
+      class={`rounded-xl p-4 mb-4 animate-fade flex items-start gap-3 ${alertClasses}`}
     >
       <div
-        class={{
-          'flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center': true,
-          [darkTheme ? badgeClasses.dark : badgeClasses.light]: true,
-        }}
+        class={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${badgeClasses}`}
       >
         {type === 'error' ? (
           <svg
@@ -313,11 +295,7 @@ export const Alert: FunctionalComponent<AlertProps> = ({
               type='button'
               onClick={onTryAgainButtonClick}
               data-test-id='try-again-button'
-              class={{
-                [tryAgainButtonClasses.default]: true,
-                [tryAgainButtonClasses.light]: !darkTheme,
-                [tryAgainButtonClasses.dark]: darkTheme,
-              }}
+              class={`${tryAgainButtonClasses.default} ${darkTheme ? '' : tryAgainButtonClasses.light}`}
             >
               {tryAgainButtonText}
             </button>
@@ -331,19 +309,19 @@ export const Alert: FunctionalComponent<AlertProps> = ({
 };
 
 interface SpinnerProps {
-  color: string;
   classes: string;
 }
 
+// fill as a style, not the attribute: a presentation attribute can't read
+// a CSS variable, a style can.
 export const Spinner: FunctionalComponent<SpinnerProps> = ({
-  color,
   classes,
 }) => (
   <svg
     width='32px'
     height='32px'
     class={classes}
-    fill={color}
+    style={{ fill: 'var(--jbid-spinner)' }}
     viewBox='0 0 24 24'
     xmlns='http://www.w3.org/2000/svg'
     aria-hidden='true'
@@ -361,13 +339,14 @@ export const Spinner: FunctionalComponent<SpinnerProps> = ({
 
 interface BankIdLogoProps {
   color: string;
-  size?: number;
+  // Pixels, or any CSS length such as a percentage of its container.
+  size?: number | string;
 }
 
 export const BankIdLogo: FunctionalComponent<BankIdLogoProps> = ({ color, size = 32 }) => (
   <svg
-    width={`${size}px`}
-    height={`${size}px`}
+    width={typeof size === 'number' ? `${size}px` : size}
+    height={typeof size === 'number' ? `${size}px` : size}
     viewBox='0 0 39 39'
     xmlns='http://www.w3.org/2000/svg'
     aria-hidden='true'

@@ -21,6 +21,7 @@ export class JgroupBankId {
         this.autoStartSingleOption = false;
         this.darkTheme = false;
         this.rounded = 'full';
+        this.block = false;
         this.language = 'sv';
         this.flowType = undefined;
         this.isMobileOrTablet = false;
@@ -103,19 +104,18 @@ export class JgroupBankId {
         if (!this.propsValid) {
             return (h("p", { role: 'alert' }, this.propsValidationErrorMessage));
         }
-        return (h(Host, null, this.shouldRenderStartButtons && (
+        return (
+        // data-theme picks the scheme's colors in jgroup-bank-id.css.
+        h(Host, { "data-theme": this.darkTheme ? 'dark' : 'light' }, this.shouldRenderStartButtons && (
         // A grid, not flex - a grid's single implicit column auto-sizes
         // to its widest row (justify-items defaults to stretch), so both
         // buttons match the wider one's own natural content width
         // exactly, whichever that is - robust across languages/
         // translations rather than a number tuned for one piece of text.
-        h("div", { class: 'grid justify-center' }, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, rounded: this.rounded, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
+        // With block, the column is the container's full width instead.
+        h("div", { class: this.block ? 'grid' : 'grid justify-center' }, h(StartButton, { isOutlined: false, block: this.block, rounded: this.rounded, onClick: this.init, isLoading: this.isStarting && !this.isStartingOnAnotherDevice, text: this.flowType === 'qr' && !this.isStartingOnAnotherDevice
                 ? this.t('start-qr')
-                : this.t('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, darkTheme: this.darkTheme, rounded: this.rounded, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.t('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.t(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.t('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("div", { class: {
-                'w-fit mx-auto mb-4 p-3 rounded-xl animate-fade': true,
-                'bg-white border border-gray-200': !this.darkTheme,
-                'bg-neutral-800 border border-neutral-700': this.darkTheme,
-            } }, h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, alt: this.t('qr-code-alt'), class: 'block rounded-lg' }))), this.shouldRenderAppInProgressMessage && (h("p", { "data-test-id": 'app-in-progress-message', "aria-live": 'polite', class: 'text-center animate-fade' }, this.t('app-in-progress'))), this.shouldRenderCancelButton && (h("p", { class: 'text-center animate-fade' }, h(CancelButton, { onClick: this.cancel, text: this.t('cancel'), isLoading: this.isCancelling, darkTheme: this.darkTheme })))));
+                : this.t('start-app') }), this.isMobileOrTablet && (h("div", { class: 'mt-4' }, h(StartButton, { isOutlined: true, rounded: this.rounded, onClick: this.startOnAnotherDevice, isLoading: this.isStarting && this.isStartingOnAnotherDevice, text: this.t('start-qr-another-device') }))))), this.shouldRenderStatusHint && (h(Alert, { message: this.t(`hintcode-${this.flowType}-${this.statusHintCode || 'unknown'}`, `hintcode-${this.statusHintCode || 'unknown'}`), type: this.status === 'failed' ? 'error' : 'info', tryAgainButtonText: this.t('try-again'), onTryAgainButtonClick: this.reset, darkTheme: this.darkTheme })), this.shouldRenderQrImage && (h("div", { class: 'w-fit mx-auto mb-4 p-3 rounded-xl animate-fade border bg-[color:var(--jbid-qr-background)] border-[color:var(--jbid-qr-border)]' }, h("img", { src: (_a = this.qrCodeImageUrl) !== null && _a !== void 0 ? _a : undefined, alt: this.t('qr-code-alt'), class: 'block rounded-lg' }))), this.shouldRenderAppInProgressMessage && (h("p", { "data-test-id": 'app-in-progress-message', "aria-live": 'polite', class: 'text-center animate-fade' }, this.t('app-in-progress'))), this.shouldRenderCancelButton && (h("p", { class: 'text-center animate-fade' }, h(CancelButton, { onClick: this.cancel, text: this.t('cancel'), isLoading: this.isCancelling })))));
     }
     /** Computed */
     get shouldRenderCancelButton() {
@@ -466,6 +466,24 @@ export class JgroupBankId {
                 "attribute": "rounded",
                 "reflect": false,
                 "defaultValue": "'full'"
+            },
+            "block": {
+                "type": "boolean",
+                "mutable": false,
+                "complexType": {
+                    "original": "false",
+                    "resolved": "boolean",
+                    "references": {}
+                },
+                "required": false,
+                "optional": false,
+                "docs": {
+                    "tags": [],
+                    "text": "Stretches the start buttons to the full width of the container, like a consuming app's own full-width buttons, instead of the width of their text."
+                },
+                "attribute": "block",
+                "reflect": false,
+                "defaultValue": "false"
             },
             "language": {
                 "type": "string",

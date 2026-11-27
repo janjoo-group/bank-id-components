@@ -26,7 +26,9 @@ export class JgroupBankIdButton {
         registerInterFont();
     }
     render() {
-        return (h(Host, null, h(StartButton, { isOutlined: false, darkTheme: this.darkTheme, rounded: this.rounded,
+        return (
+        // data-theme picks the scheme's colors in jgroup-bank-id.css.
+        h(Host, { "data-theme": this.darkTheme ? 'dark' : 'light' }, h(StartButton, { isOutlined: false, rounded: this.rounded,
             // A real click still reaches a consumer's own listener on this
             // element - click events bubble out of a shadow root by default
             // (composed: true), so there's no need for a dedicated

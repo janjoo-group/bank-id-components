@@ -39,10 +39,10 @@ export class JgroupBankIdButton {
 
   render() {
     return (
-      <Host>
+      // data-theme picks the scheme's colors in jgroup-bank-id.css.
+      <Host data-theme={this.darkTheme ? 'dark' : 'light'}>
         <StartButton
           isOutlined={false}
-          darkTheme={this.darkTheme}
           rounded={this.rounded}
           // A real click still reaches a consumer's own listener on this
           // element - click events bubble out of a shadow root by default

@@ -6,9 +6,115 @@
      scoped @font-face to that same shadow tree's own text. font-family is
      an inherited CSS property though, so once registered document-wide,
      this still correctly picks it up for everything inside this host. */
-  font-family:
+  font-family: var(
+    --jgroup-bankid-font-family,
     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+    Arial, sans-serif
+  );
+}
+
+/*
+ * Every color in the widget, as an internal --jbid-* variable the markup
+ * uses, set from a public --jgroup-bankid-* one when the consuming app sets
+ * it and from this package's own light or dark scheme otherwise. (Not --_*:
+ * Tailwind turns an underscore in an arbitrary class value into a space.) Unset, nothing
+ * changes. Custom properties are inherited, so they cross the shadow
+ * boundary: set them on the element or any ancestor, e.g.
+ *
+ *   jgroup-bank-id { --jgroup-bankid-button-background: #fff; }
+ *
+ * One public variable serves both schemes: an app with its own dark mode
+ * sets it to its own theme's color, and it follows along. The BankID badge
+ * (the logo on white) never changes, per BankID's brand guidelines.
+ *
+ * The scheme is the darkTheme prop, reflected as data-theme on the host.
+ * --jgroup-bankid-accent predates the rest and still works: it is the
+ * fallback for the light text and focus colors.
+ */
+:host([data-theme='light']) {
+  --jbid-button-background: var(--jgroup-bankid-button-background, #fff);
+  --jbid-button-background-hover: var(--jgroup-bankid-button-background-hover, #f9fafb);
+  --jbid-button-background-active: var(--jgroup-bankid-button-background-active, #f3f4f6);
+  --jbid-button-background-focus: var(--jgroup-bankid-button-background-focus, var(--jbid-button-background));
+  --jbid-button-border: var(--jgroup-bankid-button-border, #d1d5db);
+  --jbid-button-border-active: var(--jgroup-bankid-button-border-active, var(--jbid-button-border));
+  --jbid-button-text: var(--jgroup-bankid-button-text, var(--jgroup-bankid-accent, #1a3e4e));
+
+  --jbid-secondary-background: var(--jgroup-bankid-secondary-background, #fff);
+  --jbid-secondary-background-hover: var(--jgroup-bankid-secondary-background-hover, #f9fafb);
+  --jbid-secondary-background-active: var(--jgroup-bankid-secondary-background-active, #f3f4f6);
+  --jbid-secondary-background-focus: var(--jgroup-bankid-secondary-background-focus, var(--jbid-secondary-background));
+  --jbid-secondary-border: var(--jgroup-bankid-secondary-border, #d1d5db);
+  --jbid-secondary-border-active: var(--jgroup-bankid-secondary-border-active, var(--jbid-secondary-border));
+  --jbid-secondary-text: var(--jgroup-bankid-secondary-text, var(--jgroup-bankid-accent, #1a3e4e));
+
+  --jbid-focus: var(--jgroup-bankid-focus, var(--jgroup-bankid-accent, #1a3e4e));
+  --jbid-spinner: var(--jgroup-bankid-spinner, #1a3e4e);
+
+  --jbid-cancel-text: var(--jgroup-bankid-cancel-text, #737373);
+  --jbid-cancel-text-hover: var(--jgroup-bankid-cancel-text-hover, #404040);
+  --jbid-cancel-text-active: var(--jgroup-bankid-cancel-text-active, #262626);
+  --jbid-cancel-focus: var(--jgroup-bankid-focus, #1c6882);
+
+  --jbid-qr-background: var(--jgroup-bankid-qr-background, #fff);
+  --jbid-qr-border: var(--jgroup-bankid-qr-border, #e5e7eb);
+
+  --jbid-error-background: var(--jgroup-bankid-error-background, #fef2f2);
+  --jbid-error-text: var(--jgroup-bankid-error-text, #991b1b);
+  --jbid-error-icon-background: var(--jgroup-bankid-error-icon-background, #fee2e2);
+  --jbid-error-icon: var(--jgroup-bankid-error-icon, #dc2626);
+  --jbid-info-background: var(--jgroup-bankid-info-background, #eefbfd);
+  --jbid-info-text: var(--jgroup-bankid-info-text, #1f566b);
+  --jbid-info-icon-background: var(--jgroup-bankid-info-icon-background, #d4f5f9);
+  --jbid-info-icon: var(--jgroup-bankid-info-icon, #1c6882);
+
+  --jbid-retry-background: var(--jgroup-bankid-retry-background, #fff);
+  --jbid-retry-background-hover: var(--jgroup-bankid-retry-background-hover, #fee2e2);
+  --jbid-retry-background-active: var(--jgroup-bankid-retry-background-active, #fecaca);
+  --jbid-retry-text: var(--jgroup-bankid-retry-text, #991b1b);
+}
+
+:host([data-theme='dark']) {
+  --jbid-button-background: var(--jgroup-bankid-button-background, #262626);
+  --jbid-button-background-hover: var(--jgroup-bankid-button-background-hover, #404040);
+  --jbid-button-background-active: var(--jgroup-bankid-button-background-active, #525252);
+  --jbid-button-background-focus: var(--jgroup-bankid-button-background-focus, #404040);
+  --jbid-button-border: var(--jgroup-bankid-button-border, #404040);
+  --jbid-button-border-active: var(--jgroup-bankid-button-border-active, #a3a3a3);
+  --jbid-button-text: var(--jgroup-bankid-button-text, #fff);
+
+  --jbid-secondary-background: var(--jgroup-bankid-secondary-background, transparent);
+  --jbid-secondary-background-hover: var(--jgroup-bankid-secondary-background-hover, #404040);
+  --jbid-secondary-background-active: var(--jgroup-bankid-secondary-background-active, #525252);
+  --jbid-secondary-background-focus: var(--jgroup-bankid-secondary-background-focus, #525252);
+  --jbid-secondary-border: var(--jgroup-bankid-secondary-border, #404040);
+  --jbid-secondary-border-active: var(--jgroup-bankid-secondary-border-active, #a3a3a3);
+  --jbid-secondary-text: var(--jgroup-bankid-secondary-text, #e5e7eb);
+
+  --jbid-focus: var(--jgroup-bankid-focus, #737373);
+  --jbid-spinner: var(--jgroup-bankid-spinner, #fff);
+
+  --jbid-cancel-text: var(--jgroup-bankid-cancel-text, #a3a3a3);
+  --jbid-cancel-text-hover: var(--jgroup-bankid-cancel-text-hover, #e5e5e5);
+  --jbid-cancel-text-active: var(--jgroup-bankid-cancel-text-active, #f5f5f5);
+  --jbid-cancel-focus: var(--jgroup-bankid-focus, #737373);
+
+  --jbid-qr-background: var(--jgroup-bankid-qr-background, #262626);
+  --jbid-qr-border: var(--jgroup-bankid-qr-border, #404040);
+
+  --jbid-error-background: var(--jgroup-bankid-error-background, #262626);
+  --jbid-error-text: var(--jgroup-bankid-error-text, #f5f5f5);
+  --jbid-error-icon-background: var(--jgroup-bankid-error-icon-background, rgb(239 68 68 / 0.2));
+  --jbid-error-icon: var(--jgroup-bankid-error-icon, #f87171);
+  --jbid-info-background: var(--jgroup-bankid-info-background, #262626);
+  --jbid-info-text: var(--jgroup-bankid-info-text, #f5f5f5);
+  --jbid-info-icon-background: var(--jgroup-bankid-info-icon-background, rgb(28 160 190 / 0.2));
+  --jbid-info-icon: var(--jgroup-bankid-info-icon, #77d8e9);
+
+  --jbid-retry-background: var(--jgroup-bankid-retry-background, #404040);
+  --jbid-retry-background-hover: var(--jgroup-bankid-retry-background-hover, #525252);
+  --jbid-retry-background-active: var(--jgroup-bankid-retry-background-active, #737373);
+  --jbid-retry-text: var(--jgroup-bankid-retry-text, #fff);
 }
 
 .animate-fade {

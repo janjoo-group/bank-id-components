@@ -4689,8 +4689,9 @@ const StartButton = ({ onClick, isLoading, text, isOutlined, block = false, roun
         class: `${classes.default} ${classes.corners[rounded]} ${isOutlined ? classes.textOnly : block ? classes.withIconBlock : classes.withIcon} ${isOutlined ? classes.secondary : classes.primary}` },
         !isOutlined ? (h("span", { class: `flex-shrink-0 h-[var(--jgroup-bankid-badge-size,2.25rem)] w-[var(--jgroup-bankid-badge-size,2.25rem)] ${rounded === 'full' ? 'rounded-[var(--jgroup-bankid-badge-radius,9999px)]' : 'rounded-[var(--jgroup-bankid-badge-radius,0.5rem)]'} bg-white border border-black/10 shadow flex items-center justify-center` },
             h(BankIdLogo, { color: primaryColor, 
-                // 26px of the 36px badge, and the same share of any other size.
-                size: '72%' }))) : (''),
+                // The mark's share of the badge, whatever size the badge is; the
+                // rest is the badge's own white clear space around it.
+                size: '76%' }))) : (''),
         !isLoading ? (h("span", { class: 'flex-grow text-center' }, text)) : (h("span", { class: 'flex-grow flex items-center justify-center' },
             h(Spinner
             // Measured identical to the avatar's own 36px (h-9 w-9)
@@ -4755,7 +4756,11 @@ const Alert = ({ message, type, onTryAgainButtonClick, tryAgainButtonText, darkT
 const Spinner = ({ classes, }) => (h("svg", { width: '32px', height: '32px', class: classes, style: { fill: 'var(--jbid-spinner)' }, viewBox: '0 0 24 24', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
     h("path", { d: 'M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity: '.25' }),
     h("path", { d: 'M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z', class: 'spinner' })));
-const BankIdLogo = ({ color, size = 32 }) => (h("svg", { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size, viewBox: '0 0 39 39', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
+const BankIdLogo = ({ color, size = 32 }) => (h("svg", { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size, 
+    // Cropped to the mark itself (x 5-35, y 5.5-32.5 of the original 39x39
+    // canvas) plus half a unit, so the size given is the mark's own and not
+    // mostly empty canvas - in the badge, the white around it is the badge's.
+    viewBox: '4.5 5 31 28', xmlns: 'http://www.w3.org/2000/svg', "aria-hidden": 'true' },
     h("g", { stroke: 'none', "stroke-width": '1', fill: 'none', "fill-rule": 'evenodd' },
         h("rect", { fill: 'none', x: '0', y: '0', width: '39', height: '39' }),
         h("g", { transform: 'translate(5, 5)', fill: color },

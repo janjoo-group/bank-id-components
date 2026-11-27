@@ -133,8 +133,9 @@ export const StartButton: FunctionalComponent<StartButtonProps> = ({
         <span class={`flex-shrink-0 h-[var(--jgroup-bankid-badge-size,2.25rem)] w-[var(--jgroup-bankid-badge-size,2.25rem)] ${rounded === 'full' ? 'rounded-[var(--jgroup-bankid-badge-radius,9999px)]' : 'rounded-[var(--jgroup-bankid-badge-radius,0.5rem)]'} bg-white border border-black/10 shadow flex items-center justify-center`}>
           <BankIdLogo
             color={primaryColor}
-            // 26px of the 36px badge, and the same share of any other size.
-            size='72%'
+            // The mark's share of the badge, whatever size the badge is; the
+            // rest is the badge's own white clear space around it.
+            size='76%'
           />
         </span>
       ) : (
@@ -347,7 +348,10 @@ export const BankIdLogo: FunctionalComponent<BankIdLogoProps> = ({ color, size =
   <svg
     width={typeof size === 'number' ? `${size}px` : size}
     height={typeof size === 'number' ? `${size}px` : size}
-    viewBox='0 0 39 39'
+    // Cropped to the mark itself (x 5-35, y 5.5-32.5 of the original 39x39
+    // canvas) plus half a unit, so the size given is the mark's own and not
+    // mostly empty canvas - in the badge, the white around it is the badge's.
+    viewBox='4.5 5 31 28'
     xmlns='http://www.w3.org/2000/svg'
     aria-hidden='true'
   >
